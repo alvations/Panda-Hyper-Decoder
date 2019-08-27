@@ -1,0 +1,58 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Term Extraction as a Filter Framework
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{body/teaff}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Using Terminology to Improve Machine Translation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{body/term-in-mt.tex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Other Techniques to Improve Machine Translation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Measuring the Goodness of Machine Translation}
+%\chapter{Measuring Goodness of Machine Translation}
+\label{chap:goodness}
+
+The discussion up till now on evaluating  translation quality is based on BLEU scores (Papineni et al., 2002) and its statistical significance based on bootstrap resampling  (Koehn, 2004). In this Chapter, we propose a different way to look at machine translation evaluation focusing on (i) evaluating the semantic `goodness' of machine translated texts by casting it as a semantic textual similarity task and (ii) highlighting an awkward disparity between BLEU / RIBES\footnote{An extension of BLEU} and human evaluation of translated text. 
+
+\input{body/sts.tex}
+
+\newpage
+\input{body/awkward.tex}
+
+\newpage
+\section{Summary}
+
+Taking a short detour from terminology and ontology, Section 6.1 and 6.2 in this chapter presented our first attempt in mitigating the inadequacy of current state-of-art machine translation evaluation metrics and propose a semantically motivated metric by casting the machine translation task as a semantic textual similarity task. Then we explored the discrepancy between automatic machine translation evaluation metrics against the human judgments of the quality of the translated text and we found an awkward disparity between them. We hope that the findings in this chapter can help in future studies in the measurement of machine translation quality and eventually improve machine translation in turn. 
+
+%\section{Cleaning Data for the Win}
+%\subsection{Gale-Church Filter} % If I've time, the symmetrized version.
+
+%\section{Tuning Systems}
+%\subsection{with Harmonic MERT-MIRA Weights}
+%\subsection{with Linear Regression PRO}
+%\subsection{with Tree-LSTM}
+
+%\subsection{COMET Evaluation Metric}
+%\subsection{BFF Quality Estimation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ontology Induction with Neural Nets
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{body/onto}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Clustercat
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\chapter{Using Sub-Ontological Knowledge to Improve Machine Translation}
+\label{chap:clustercat}
+\input{body/cluster}

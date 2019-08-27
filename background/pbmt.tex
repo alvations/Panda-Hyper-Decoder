@@ -1,0 +1,80 @@
+\section{The Mathematics of Statistical Machine Translation}
+
+The sections above described a zoo of SMT models with varying levels of linguistic information incorporated into the different models. In this section, we describe in detail the phrase-based SMT models that are used in this thesis. 
+
+Let's consider the scenario of translating French text into English, to formalize the convention, we will use \emph{\textbf{s}} to denote a source language (i.e. French) sentence and \emph{\textbf{t}} to denote a target language (i.e. English) sentence. 
+
+The objective of the MT system is to find the best translation \emph{\textbf{\^{t}}} that maximizes the translation probability p(\emph{\textbf{t}}${|}$\emph{\textbf{s}}) given a source sentence \emph{\textbf{s}}:
+
+\begin{equation}
+\hat { t } =\underset { t }{ argmax } \ p(t|s)
+\end{equation}
+
+\noindent Applying Bayes' rule, we can factorize p(\emph{\textbf{t}}${|}$\emph{\textbf{s}}) into three parts:
+
+\begin{equation}
+p(t|s)=\frac { p(t) }{ p(s) } p(s|t)
+\end{equation}
+
+\noindent Substituting our  p(\emph{\textbf{t}}${|}$\emph{\textbf{s}}) back into our search for the best translation \emph{\textbf{\^{t}}} using \emph{argmax}:
+
+\begin{equation}
+\begin{aligned}
+\hat { t } &=\underset { t }{ argmax } \ p(t|s) \\
+           &=\underset { t }{ argmax } \ \frac { p(t) }{ p(s) } p(s|t) \\
+           &=\underset { t }{ argmax } \ p(t) p(s|t)
+\end{aligned}
+\end{equation}
+
+We note that the denominator p(\emph{\textbf{s}}) can be dropped because for all translations the probability of the source sentence remains the same and the \emph{argmax} objective optimizes the probability relative to the set of possible translations given a single source sentence. 
+
+At first glance, the formulation seems counter-intuitive in that in order to achieve the best translation in the target language \emph{\textbf{\^{t}}}, we compute the component p(\emph{\textbf{s}}${|}$\emph{\textbf{t}}). This is derived from Bayes' rule and corresponds to casting the translation problem as an instance of the noisy channel model in information theory \citep{shannon2001mathematical}.
+
+We can explain this anecdotally, consider our machine translation system as a human translator who is a native speaker of the target language (let's say English). When he/she hears the source language sentence (i.e. French), he/she will conceive of an English sentence and we can consider the p(\emph{\textbf{t}}) component as the grammaticality of that English translation.
+
+The translator then tries to check that he/she has achieved the best translation of the source sentence \emph{\textbf{s}} given the hypothesized English sentence, \emph{\textbf{t}}. And we can consider this process as the p(\emph{\textbf{s}}${|}$\emph{\textbf{t}}) component of our machine translation system.
+
+\noindent \cite{brown1993mathematics} provides another anecdotal account to describe the noisy-channel model\footnote{The notation in the quotation has been modified to suit the notation used in this thesis.}:
+
+\blockquote{\emph{As a representation of the process by which a human being translates a passage from French to English, this equation is fanciful at best. One can hardly imagine someone rifling mentally through the list of all English passages computing the product of the a priori probability of the passage, p(\emph{t}), and the conditional probability of the French passage given the English passage, p(\emph{s}${|}$\emph{t}). Instead, there is an overwhelming intuitive appeal to the idea that a translator proceeds by first understanding the French, and then expressing in English the meaning that he has thus grasped. Many people have been guided by this intuitive picture when building machine translation systems.}}
+
+In another words, the source sentence probabilistically passes through the noisy channel  p(\emph{\textbf{t}}${|}$\emph{\textbf{s}}) to result in the target sentence:
+
+
+\begin{equation}
+\begin{aligned}
+p(s)\quad \quad ->\quad p({ { t } }{ | }{ { s } })\quad \quad ->\quad \quad f\\ 
+\quad \quad source\quad \quad \quad \quad \quad channel\quad \quad \quad \quad target
+\end{aligned}
+\end{equation}
+
+We need to reason backwards to the best \emph{\textbf{\^{s}}} in the source that corresponds to \emph{\textbf{\^{t}}}. We know the source probability p(\emph{s}) and the channel probability p(\emph{\textbf{t}}${|}$\emph{\textbf{s}}); i.e. how likely is \emph{\textbf{s}} corrupted into \emph{\textbf{t}}
+
+\subsubsection{Log-linear Models}
+
+Extending the noisy channel model, \cite{ochneymaxentsmt} simplified the integration of additional model components using the \emph{log-linear model}. The model defines feature functions \emph{h(x)} with weights ${\lambda}$ in the following form:
+
+\begin{equation}
+P(x)=\frac { exp(\sum _{ i=1 }^{ n }{ { \lambda  }_{ i }{ h }_{ i }(x) }) }{ Z } 
+\end{equation}
+
+where the normalization constant \emph{Z} turns the numerator into a probability distribution. In the case of a simple model that contains the two primary features from the noisy channel model, we define the components as such:
+
+\begin{equation}
+\begin{aligned}
+{ h }_{ 1 }(x) &= p(t) \\
+{ h }_{ 2 }(x) &= p(s|t)
+\end{aligned}
+\end{equation}
+
+and the \emph{h(x${_1}$)} and \emph{h(x${_2}$)} are associated with the ${\lambda}$${_1}$ and ${\lambda}$${_2}$ respectively. 
+
+The flexibility of the log-linear model allows for additional translation feature components to be added to the model easily, e.g. adding p(\emph{POS${_s}$}${|}$\emph{POS${_t}$}) to account for the translation of the part-of-speech (POS) transfers across the source and target language. 
+
+Additionally, the weights ${\lambda}$ associated with the \emph{\textbf{n}} components can be tuned to optimize the translation quality over the parallel sentences, \emph{\textbf{D}} (often known as the development set):
+
+\begin{equation}
+{ \lambda  }_{ 1 }^{ n }=\underset { { \lambda  }_{ 1 }^{ n } }{ argmax } \sum _{ d=1 }^{ D }{ \log { { P }_{ { \lambda  }_{ 1 }^{ n } }({ s }_{ d }|{ t }_{ d}) }  } 
+\end{equation}
+ 
+ 

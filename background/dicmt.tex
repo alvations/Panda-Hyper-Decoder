@@ -1,0 +1,215 @@
+\section{Using Lexical Information in Statistical Machine Translation}
+
+At the transition from the word-based to phrase-based SMT paradigm, \cite{tanaka2003noun} highlighted that compound nouns are a major issue in machine translation because of their low frequencies and the high productivity of noun-noun compounds. 
+
+The noun-noun compound issue in machine translation has been particularly difficult for languages that do not separate them with whitespaces, e.g. Chinese \citep{wang2007chinese,chang2008optimizing,chang2009disambiguating,pu2015leveraging}, Japanese \citep{kitamura1996automatic,cherny2000translation,baldwin-tanaka:2004:ACLMWE,pinkham2008machine,tsuji2006automatic}, Vietnamese \citep{khanhjapanese} and German \citep{rackow1992automatic,popovic2006statistical,stymne2008german,stymne2013generation,weller2014ComAComA,cap-EtAl:2014:EACL}. It remains unsolved even with the recent advancement in character-level neural machine translation \citep{tran-bisazza-monz:2014:EMNLP2014,daiber2015machine,SennrichHB15}.
+
+Additionally, researches have also investigated improving translations of other MWEs such as phrasal verbs \citep{simova2013improving,kordoni2014multiword,cholakovkordoni2014} and named entities \citep{hermjakob2008nametrans,Nothman2013,manawi2014}. Often these bilingual MWEs are extracted automatically using a combination of statistical and heuristics-based approaches and added as additional parallel training data prior to training the machine translation system \citep{tsvetkov2012extraction}. 
+
+Another wealth of approaches on injecting lexical information in the SMT springs from the task of adapting machine translation systems to a specific-domain. While MWE motivated SMT research to focus on translating the MWEs correctly, domain adaptation for machine translation researches focused on clever ways to incorporate various resources (generic / in-domain parallel corpora, monolingual corpora and automatically extracted or manually crafted dictionary / terminologies) \citep{nanba2009automatic,sanchez2011integrating,arcan2014identification,minarro2015acquisition} or integrating them into Computer Assisted Translation (CAT) tools to aid human translation \citep{tezcan2011smt,skadicnvs2013application}
+
+The following sections of the thesis briefly survey seminal research that incorporated MWEs in SMT or used various lexical resources to adapt the machine translation system to a specific domain. The train of thought remains the same in finding novel and effective ways to incorporate additional lexical information to the standard SMT pipeline.
+
+
+\subsection{Dictionaries are Data too}
+
+\emph{"Machine translation depends vitally on data in form of large bilginual corpora, [but] bilingual dictionaries are also a source of information"}. \cite{brown1993dictionaries} showed that a bilingual dictionary can be used as an additional parameter to the machine translation system and including a dictionary can improve the maximum likelihood estimates of the bilingual text alignments. 
+
+Given a dictionary entry with the source language word/phrase \emph{\textbf{s}} and its corresponding \emph{\textbf{m}} number of translations \emph{\textbf{t${_1}$, ... t${_m}$}} and if we consider that the lexicographer has chosen the translations from a random sample of \emph{\textbf{c}} instances, the probability of translation for the dictionary entry is:
+
+%p(\emph{t${_1}$, ... t${_m}$} ${|}$ \emph{e}) ...}
+
+\begin{equation}
+p(f_1, ..., f_m | e) = \sum _{ c }^{  }{ \sum _{ { c }_{ 1 }>0 }^{  }{ ...\sum _{ { c }_{ m }>0 }^{  }{ \left( \begin{matrix} c \\ { c }_{ 1 }...{ c }_{ m } \end{matrix} \right)  } p(c|s) }  } \prod _{ i=1 }^{ m }{ { p({ t }_{ i }|s) }_{ { c }_{ i } } } 
+\end{equation}
+
+Decrypting the equation from the right to left, the product of \emph{p(\emph{t}${|}$s)} is the usual probability of the translation given the source word/phrase and the subscript in \emph{p(\emph{t}${|}$s)}${_{c_i}}$ refers to the subset of the global word/phrase translation probabilities given the sample of example sentences that the lexicographer has chosen.
+
+The $ [ \sum _{ { c }_{ 1 }>0 }^{  }{ ...\sum _{ { c }_{ m }>0 }^{  }{ \left( \begin{matrix} c \\ { c }_{ 1...m } \end{matrix} \right)  } p(c|s) } ] $ part of the equation can be simply thought of the ``effective multiplier" that changes the word/phrase translation probabilities given the lexicographer's choice of the sampled instances. For all possible \emph{\textbf{c}} number of examples that a lexicographer can generate for a given source word, \emph{\textbf{s}}, the lexicographer chose \emph{\textbf{m}} number of examples to explain the \emph{\textbf{s}} and \emph{\textbf{m}}  translations for \emph{\textbf{s}}. 
+
+Simplifying the computation, \cite{brown1993dictionaries} mathematically estimated the binomial distribution as a Poisson distribution, as such:
+
+\begin{equation}
+p(f_1, ..., f_m | e) = { exp }^{ -\lambda (s) }\prod _{ i=1 }^{ m }{ { (exp }^{ -\lambda (s)p({ t }_{ i }|s) } } -1)
+\end{equation}
+
+where they introduced the $\lambda (s)$ variable to represents the Poisson distribution mean and that simplifies the translations of the word \emph{\textbf{s}} as the product of each translation. To put it in \citeauthor{brown1993dictionaries}'s (1993b) words:
+
+\blockquote{Imagine that a lexicographer, when constructing a [source language] entry for the English word or phrase \emph{\textbf{s}}, first chooses a random size \emph{\textbf{c}}, and then selects at random a sample of \emph{\textbf{c}} instances of the use of \emph{\textbf{s}}, each with its French translation [in the target language]. We imagine, further that he includes in his entry for \emph{\textbf{s}} a list consisting of all the translations that occur at least once in his random sample. The probability that he will, in this way, obtain the list \emph{t${_1}$, ... t${_m}$} is p(\emph{t${_1}$, ... t${_m}$} ${|}$ \emph{s}) ...}
+
+Although, \cite{brown1993dictionaries} provided a mathematical account to incorporate dictionary information into an SMT system, they did not empirically test the effects of the ``effective multiplier" in a standard machine translation task setup evaluated using Word Error Rate (WER) or other machine translation evaluation metrics. However, they did show that the effective multiplier generally has a greater effect on low frequency words (${<}$5). 
+
+%This early work on dictionary has pre-empted the out-of-vocabulary or rare word problems that happens when the datasets use for machine increases and the Zipfian tail of hapax legomenon.
+
+\subsection{Augmenting Manual Dictionaries to Improve Statistical Machine Translation}
+
+\cite{Vogel04augmentingmanual} showed that a statistical machine translation system can be improved when the training data has been extended with dictionary entries and their various forms transformed using simple morphological rules (e.g. plural forms and verb inflections). They augmented Chinese-English dictionary entries with new English translations by (i) first automatically generating plural forms of the noun entries and adding the definite and indefinite determiners and generating verb forms by inflecting them with -s, -ed, -ing and  with the infinitive form `to' and (ii) then filtering out word forms generated in step (i) if they do not appear in a large monolingual English corpus.
+
+\begin{equation}
+p(s|t)=\prod _{ j }^{  }{ \sum _{ i }^{  }{ p({ s }_{ j }|{ t }_{ i }) }  } 
+\end{equation}
+
+The probabilities of each lexical entry is assigned by calculating the product over the probability of the source words \emph{\textbf{s}} and the probability of each source word \emph{\textbf{s${_j}$}} is the sum of the translation probabilities of the source word \emph{\textbf{s${_j}$}} given its \emph{\textbf{t${_i}$}}, where \emph{p(\textbf{s${_j}$} ${|}$ \textbf{t${_i}$})} is the probabilities generated from the word/phrase alignment process. However, there is no indication of how the probabilities are assigned if the lexical entry does not appear in the bilingual data which was used to generate the word/phrase alignments. Additionally, they suggested that the probability of the lexical entries can be renormalized and it might help to improve the NIST scores when only the lexicon (without bilingual corpus) is used to train the model.
+
+Simply by adding the lexicon to the baseline system using the probabilities assigned as mentioned above, \cite{Vogel04augmentingmanual} achieved improved NIST scores and the system is further improved using the augmented dictionary. 
+
+\cite{Vogel04augmentingmanual} leveraged on the isolating (non-inflecting) nature of Chinese (source language) which simplifies the probability assignments of the augmented dictionary without considering multi-to-multi translations since only the English translations can be augmented. However, their best attempt at adding the augmented dictionary showed statistically significant\footnote{at 95\% confidence interval \citep{zhang2004interpreting}} but minimal improvement (+0.38) to the baseline system, from 5.40 to 5.78 BLEU. This is in the scenario where they have trained the system using only the augmented dictionary and a large monolingual corpus for the language model; they did not use any parallel data other than the augmented dictionary.
+
+Since the dictionary augmentation only increases the word/phrase alignment fertility when translating from the isolating language (Chinese) to the inflectional one (English), the evaluations were uni-directional from Chinese-English. 
+
+\subsection{Grouping Multi-Word Expressions in Statistical Machine Translation}
+
+As Statistical Machine Translation evolved from word to phrase based approaches, the alignment models are still inherently based on word to word inferences \citep{vogel1996hmm,och2003systematic}. \cite{lambert2006grouping} proposed the idea of grouping  Multi-Word Expressions (MWE) prior to training the SMT system in the hope that the alignments created between the source and target language text depend on linguistic constituents instead of contiguous ngrams that acknowledge ngrams with partial constituents as valid phrases to be used in the decoding process. They motivate their proposal with the following example:
+
+%\cite{lambert2006grouping} motivated the use of Multi-Word Expressions (MWE) in SMT with the following example. 
+
+The phrase ``fire engine" is a fixed expression that is translated to ``camion de bomberos" in Spanish, and the viterbi word-to-word alignments will probably provide the following word alignments \emph{``camion$<$-$>$truck", ``bomberos$<$-$>$firefighters", ``fugeo$<$-$>$fire" and ``maquina$<$-$>$engine"} which will not yield the ``camion debomberos" translation since there are no combinations of 1-to-1 alignments which will lead to ``camion de bomberos". 
+
+Intuitively, the example does behoove the grouping of MWEs prior to SMT training. But they overlook the basic assumption that word alignments are performed at sentence level and sub-phrasal word-to-word alignment occurs because the phrase appears on both the source and target language; given that there are occurrences of the phrase pair in the parallel corpus, there will be probability assigned to `\emph{`bomberos$<$-$>$fire"} but the probability will be lower than \emph{``bomberos$<$-$>$firefighters"} that is a natural dictionary entry independent of the context. Moreover, given a well-built language model, the SMT should provide a low perplexity to the contiguous phrases if they are observed in the monolingual corpus. 
+
+Furthermore, \cite{lambert2006grouping} overlooked the translation model training after the word alignment process in phrase-based machine translation which capitalizes on the alignment `\emph{consistency}' which essentially requires asymmetric alignment points to extract `consistent phrases' that are saved in the phrase table used in decoding. By pre-identifying the asymmetric alignments and single-tokenizing them, the phrase extraction algorithm has lesser information when building the phrase table. 
+
+\cite{lambert2004alignment} introduced a novel approach to extract bilingual MWEs extraction using asymmetric word alignments between the source and target language phrases (i.e. non-exclusive one-to-one alignments between contiguous phrases). These asymmetric phrases are then scored by their minimal probability computed using their relative frequency between the source and target phrase (i.e. the $argmin$ between relative frequency of the source phrase and the target phrase). The top scoring candidates are heuristically filtered using language specific rules.
+
+Using the automatically extracted bilingual MWEs as a dictionary, \cite{lambert2006grouping} single-tokenized all instances of those MWEs in the SMT training corpus, e.g. whitespaces within the phrase \emph{``camion de bomberos"} would be replaced by underscore \emph{``camion\_de\_ bomberos"} and the components of SMT would treat the phrase as a single token instead of a multi-token entity.
+
+When comparing the results of the Spanish-English phrase-based model built on a corpus with single-tokenized MWEs against a baseline system trained on normal text, \cite{lambert2006grouping} reported a slight decrease in BLEU scores. They reported a drop of -3.0 BLEU (ES-EN: 54.7 to 51.7) and -0.2 BLEU  (EN-ES: 47.2 to 47.0). The significance of the difference in BLEU scores is unreported thus the effect of grouping MWEs in SMT is inconclusive. 
+
+\subsection{Domain Adaptation for Lexically Informed Statistical Machine Translation}
+
+\cite{Koehn2007domain} typified the domain adaptation scenario in machine translation systems where we have a vast amount of monolingual and parallel data in a generic domain but limited amount of in-domain data. The shared tasks held by the popular Workshop for Machine Translation (WMT) across the years follow the same setup to train machine translation systems using generic domain data and tune the systems using domain-specific data \citep{callison2010findings,callison2011findings,callisonburch2012findings,bojar2013findings,bojar2014findings,WMT15}.
+
+Using the English-French portion of the Europarl corpus\footnote{37 and 34 million French and English tokens respectively} and NewsCommentary corpus\footnote{1.2 and 1.1 million French and English tokens respectively}, \cite{Koehn2007domain} trained several French to English factored translation models and language models using various combinations of the in- and out-domain data and tested them on a test set made of news commentaries:
+
+\begin{itemize}
+\item Training a single translation model and language model using only the Europarl corpus (25.11 BLEU)
+\item Training a single translation model and language model using only the NewsCommentary corpus (25.88 BLEU)
+\item Training a single translation model and language model using both the Europarl and NewsCommentary corpora (26.69 BLEU)
+\item Training a single translation model using both the Europarl and NewsCommentary corpora and using only the NewsCommentary in the language model (27.46 BLEU)
+\item Training a single translation model using both the Europarl and NewsCommentary corpora and using an interpolated language model trained with both corpora (27.12 BLEU)
+\item Alternative decoding using a single translation model trained on both in- and out-domain corpora and two separate language models trained using only the Europarl corpus and only the NewsCommentary corpus (27.30 BLEU)
+\item Alternative decoding using a single language model trained on the in-domain data and two translation models trained separately using only the Europarl corpus and only the NewsCommentary corpus (27.64 BLEU)
+\end{itemize}
+
+The best results was obtained using alternative path decoding \citep{birch2007ccg} from two different translation models and a single language model trained using the in-domain data. 
+
+One possible reason for the difference in the scores achieved by alternative path decoding using two translations models (27.64 BLEU) and simply combining the data (26.69 BLEU) is the access to varied factor probabilities from different models. When the factor probabilities are computed separately the normalizing denominators are domain dependent, which will result in varying ranks in the translation probabilities of in-domain phrases. However, the +1.05 BLEU improvement was neither tested for statistical significance nor manually evaluated; it may not reflect true improvement in translation quality. 
+
+Relatively, the simple data concatenation of the in-domain data with the generic corpus achieved a +1.58 BLEU improvement (25.11 to 25.88 to 26.69). Also, the same improvement is reflected when only the in-domain data was used to train the language model. 
+
+Hypothetically, the concatenation of the in-domain data with general domain data could have effectively introduced domain specific words that might not have been in the generic corpus or increase the counts of the domain specific words. These findings empirically reflect the notion of ``effective multiplier" that \cite{brown1993dictionaries} theoretically proved; SMT domain adaptation can be achieved by influencing the frequencies in the in-domain lexicon.
+
+\subsection{Training Phrase-Based SMT Models using Domain-Specific and Generic Corpora and Dictionaries}
+
+\cite{wu2008domain} enumerated several scenarios where researchers have access to one or more of the following  resources (i) a generic parallel corpus, (ii) an in-domain dictionary, (iii) an in-domain target language corpus and (iv) an in-domain source language corpus. \cite{wu2008domain} developed a heuristics-based domain adaptation algorithm approach that checks which of the resources is/are available before training the model differently depending on the available resource(s). 
+
+Their default assumption is that there is always a generic parallel corpus and an in-domain dictionary. \cite{wu2008domain} developed a domain adaptation algorithm for SMT that follows the following steps:
+
+\begin{itemize}
+\item[1a.] \emph{\textbf{if an in-domain target language corpus is available}}, train two separate language model using the in- and out-domain target language corpus and use the additional language model as an extra feature function in the decoding process. Using the extra language model feature, train a phrase-based system.
+\item[1b.] \emph{\textbf{otherwise}} train a standard phrase-based system on the out-domain parallel texts and in-domain dictionary.
+\item[2.] \emph{\textbf{if an in-domain source language corpus is available}}, translate the source language corpus with the system built in step 1, then append the source and translation to the generic parallel text and dictionary to retrain the model and evaluate the new model on a development set. Then repeat the translation of the source language corpus and retrain the model until there's no improvement made to the development set.
+\end{itemize}
+
+The recursive retraining in step 2 is similar to the   approach introduced by \cite{ueffing2007transductive}. To combine the lexical information from both the generic corpus and the in-domain dictionary, \cite{wu2008domain} created two phrase tables separately from the generic corpus and the in-domain dictionary. They experimented with four different ways to assign the probabilities of the dictionary phrase table: 
+
+\begin{itemize}
+\item[i.] \emph{\textbf{simply adding the dictionary as additional data to the generic corpus}}
+\item[ii.] \emph{\textbf{using uniform probabilities}} ($1/n$, where $n$ is the no. of possible translations for a source phrase) 
+\item[iii.] \emph{\textbf{using constant probabilities}} (as reported in the paper, they set the constant to 1 for their experiments)
+\item[iv.] \emph{\textbf{using corpus probabilities}} when an in-domain source corpus is available\footnote{they repeatedly translated the source corpus synthetically as in step 2 of the algorithm, then estimate the probabilities using the translation probabilities of the dictionary entries using the translation probabilities from the phrase table}
+\end{itemize}
+
+When translating from Chinese to English\footnote{Tuned and tested on IWSLT 2006 development and evaluation data} using a model trained on the CLDC Chinese-English bilingual corpus\footnote{http://www.chineseldc.org/doc/CLDC-LAC-2003-004/intro.htm} (\textbf{generic corpus}) and the Basic Travel Expression Corpus (BTEC) \citep{iwslt2006} (\textbf{in-domain corpus}) and the LDC Chinese English translation Lexicon (LDC2002L27) (\textbf{generic dictionary}) and a manually created \textbf{in-domain dictionary}\footnote{They collected dictionary entries from phrase books and the dictionary was verified with a native Chinese speaker} was used as the dictionary, their baseline system achieved 13.59 BLEU and simply adding the dictionary as additional training data improved the system by +1.93 BLEU. Using uniform, constant and corpus probabilities yielded +2.41, +2.79 and +2.13 BLEU improvement respectively over the baseline. They showed that they were able to exploit the monolingual source corpus to improve translations. 
+
+Furthermore, when they added the target language corpus, their combined system trained using the algorithm described above scored 21.75 BLEU points, a significant improvement over the baseline system trained on the generic corpus. Without the dictionary input and the transductive learning cycles, the generic corpus with the target language in-domain corpus, the model scored 17.16. 
+
+Additionally, \cite{wu2008domain} analyzed the number of lexical entries and the out-of-vocabulary percentage of the various resources and concludes that:
+
+\begin{itemize}
+\item Using a general-domain dictionary alone (without the in-domain dictionary) can improve the system (17.16 (baseline) $->$ 19.11 BLEU)
+\item Using a manually crafted in-domain dictionary alone improves the system more than using a general dictionary (21.16 BLEU)
+\item Using an automatically extracted in-domain dictionary\footnote{They extracted the in-domain dictionary from BTEC using the methods described in \cite{wu2007comparative}} alone improves the system too (19.88 BLEU)
+\item Combining the generic and manually-crafted in-domain dictionary improves the system further than just the in-domain dictionary alone (21.34 BLEU)
+\item Combining the generic and automatically extracted in-domain dictionary improves the system but marginally (20.49)
+\end{itemize}
+
+\cite{wu2008domain} empirically tested various improvements that different resources can make to an SMT system and showed significant BLEU improvements over their baseline system. They have also tried various ways to incorporate lexical information from manually and automatically extracted dictionaries into an SMT system. 
+
+However, the evaluation data and the host of resources they have used in their experiments are not openly available, preventing other researchers to verify and improve upon their work. 
+
+%It also leads to the current advancement in exploring how and whether generic and domain-specific lexicon can improve state-of-art SMT systems.
+
+\subsection{Improving Statistical Machine Translation Using Domain-Specific Bilingual MWEs}
+
+Motivated by the research reported in \cite{lambert2006grouping} and \cite{wu2008domain} work on using MWEs in SMT and in \cite{Koehn2007domain} on  improvements made to domain-adapted MT, \cite{ren2009improving} experimented with three different ways of integrating lexical knowledge from MWEs into SMT; viz 
+
+\begin{itemize}
+\item[i.] \emph{\textbf{Adding a bilingual MWE dictionary as additional data before training the SMT models}} ({\tt BiMWE)}
+\item[ii.] \emph{\textbf{Using a binary feature function that uses 1 to represent the existence of at least one MWE translation}} matching entries in the MWE dictionary and
+\item[iii.] \emph{\textbf{Adding the MWE dictionary as an additional phrase table and assigning all feature probabilities to 1}} for alternative path decoding. 
+\end{itemize}
+
+They evaluated the methods using two Chinese-English domain-specific patent corpora, one in the Traditional Chinese Medicine (TCM) domain and the other in the chemical industry domain. The training corpora were of similar sizes with 120,000 sentences that contains around 4.5 tokens for each sentence. The models were tuned and tested on a development and test set that comprised 1,000 sentences (30-40,000 words in total). 
+
+All three methods of integrating MWE attained marginal improvement ($<$ +1.0 BLEU) over their baseline phrase-based system that achieved 26.58 BLEU in the TCM domain. 
+
+In their error analysis, they manually evaluated the automatically extracted MWEs and found that only 76.69\% are correct. They introduce a Log-Likelihood Ratio (LLR) scoring mechanism with Gaussian priors to filter the noisily extracted MWE list and retrained their MT model with {\tt BiMWE} and found that the system improved from 26.61 to 27.15 BLEU. However, it is still marginally better than their baseline system without MWEs. Similarly, all three MWE integration methods with the filtering mechanism had marginal gains ($<$ +0.5 BLEU) over their baseline (18.82 BLEU) in the chemical industry domain.
+
+\cite{ren2009improving} concluded their experiments with "to our disappointment, however, none of these improvements are statistically significant". 
+
+\begin{landscape}
+\newpage
+\begin{table}
+\centering
+{\tablinesep=2ex\tabcolsep=5pt
+    \begin{tabular}{lc|ccc|cc|ccc|c}
+    \textbf{Previous Work}       & ~      & \textbf{+Dict}                & \textbf{+MWE}                 & \textbf{Single-tok}           & \textbf{In-Domain}            & \textbf{Domain Adapt.}        & \textbf{Passive}              & \textbf{Intrusive}            & \textbf{Pervasive}            & \textbf{+BLEU (sig.)}         \\ \hline
+    
+    Vogel \& Monson     & (2004) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & ~                    & ~                    & \checkmark  \\
+    Lambert \& Branch   & (2006) & ~                    & \checkmark  & \checkmark  & ~                    & ~                    & ~                    & ~                    & ~                    & ~                    \\
+    Koehn \& Schroeder  & (2007) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & \checkmark  & ~                    & \checkmark  \\
+    Wu et al.           & (2008) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & ~                    & ~                    & \checkmark  \\
+    Ren et al.          & (2009) & \checkmark  & \checkmark  & ~                    & ~                    & \checkmark  & \checkmark  & \checkmark  & ~                    & ~                    \\
+    Pal et al.          & (2010) & ~                    & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & ~                    & ~                    & \checkmark  \\
+    Tsvetkov \& Wintner & (2012) & ~                    & \checkmark  & ~                    & \checkmark  & ~                    & \checkmark  & ~                    & ~                    & \checkmark  \\
+    Skadins et al.      & (2013) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & \checkmark  & ~                    & \checkmark  \\
+    Simova \& Kordoni   & (2013) & ~                    & \checkmark  & \checkmark  & \checkmark  & ~                    & \checkmark  & ~                    & ~                    & \checkmark  \\
+    Meng et al.         & (2014) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & \checkmark  & \checkmark  & \checkmark  \\
+    Tan and Pal         & (2014) & \checkmark  & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & ~                    & ~                    & ~                    \\
+    Hellrich \& Hahn    & (2015) & \checkmark  & ~                    & ~                    & ~                    & \checkmark  & \checkmark  & ~                    & ~                    & ~                    \\
+    Tan et al.          & (2015) & \checkmark  & ~                    & ~                    & ~                    & ~                    & \checkmark  & ~                    & \checkmark  & \checkmark  \\
+    \textbf{This Thesis }        & (2016) & \checkmark  & \checkmark  & \checkmark  & \checkmark  & ~                    & \checkmark  & ~                    & \checkmark  & \checkmark  \\
+    \end{tabular}
+}
+\caption{A Comparison of Previous Work in Integrating Lexical Resources in Statistical Machine Translation}
+\label{table:dictmt}
+\end{table}
+\end{landscape}
+
+\newpage
+\subsection{A Overview of Integrating Lexical Information in SMT}
+
+Table 2.1 presents an overview of the state of art in integrating lexical information in statistical machine translation. Based on BLEU score evaluation, the results shows that it is possible to achieve statistically significant BLEU gains albeit generally only a minor increment in absolute BLEU scores. 
+
+The \textbf{Passive} column refers to the integration lexical information by adding additional training data prior to the model training. The joint \textbf{+Dict} and \textbf{Passive} columns show that the most common approach to integrating lexical information is the passive addition of manually crafted or automatically extracted parallel dictionary or terminology to the start of statistical machine translation training process \citep{Vogel04augmentingmanual,koehn2007experiments,wu2008domain,ren2009improving,skadicnvs2013application,meng2014,manawi2014,minarro2015acquisition,pervasive2015}. In some studies, they also added automatically extracted Multi-Word Expressions (MWEs) to training data prior to the training process \citep{ren2009improving,manawi2014}, indicated by the joint  \textbf{+Dict}, \textbf{+MWE}, \textbf{Passive} columns in Table 2.1.
+
+There were also studies that explores the effects of solely adding parallel MWEs \citep{lambert2006grouping,pal2010handling,tsvetkov2012extraction,simova2013improving,kordoni2014multiword}, represented by the joint \textbf{+MWE} and \textbf{Passive} columns. This is in line with the \citep{brown1993dictionaries} hypothesis of increasing the relevant ``effective multiplier" of MWEs by increasing their frequencies in the training data. In exploring effectively multiplying the frequencies of MWEs, \cite{lambert2006grouping} experimented with single tokenizing the MWEs to trick the SMT system to treat the MWEs as a single token when extracting and decoding the ngrams; they achieved negative results from their experiments (details in Section 2.3.3). 
+
+However, as shown by the joint \textbf{+MWE}, \textbf{Single-tok} and \textbf{Passive} columns, \cite{tsvetkov2012extraction} and \cite{kordoni2014multiword} repeated similar experiments on a different datasets and found that single tokenizing MWEs provides BLEU gains to SMT systems. Like in some other lexical information adding studies, they achieved statistical significant BLEU increments with little absolute BLEU gains. Focusing on only specific types of MWEs, e.g. named entities, verb compounds or phrasal verbs, \cite{pal2010handling} and \cite{simova2013improving} showed positive results in single tokenizing MWEs to improve statistical machine translation.
+
+Previously research on exploiting additional lexical information primarily targets the task of domain adaptation where external resources from a different domain are included to the training data to scale the machine translation system from one domain to another. In doing so, addition lexical resources from different domains are needed. Alternatively, \cite{tsvetkov2012extraction} and \cite{kordoni2014multiword} attempted to inject domain-specificity \textbf{without using external resources from another daomain}. This is usually done by capitalizing on the lexical distribution extracted from the training data. The machine translation improvements made in this thesis follow the same train of thought where that lexical resource comes from the same domain as the training data. 
+
+The \textbf{Domain Adapt.} column in Table 2.1 indicates the work focused on adapting machine translation from one domain to another while the \textbf{In-Domain} column indicates the researches focusing on improving domain specificity in machine translation using the resources extracted from the training data.
+
+
+Other than passively adding lexical information to the training data, previous studies have attempted various ways of injecting lexical information in the various steps in the statistical machine translation training processing. \cite{koehn2007experiments} introduced the idea of using more than a single pre-trained translation model and language model that can be used as domain adaptation. In that sense, the lexical information is added not only by \textit{passively} adding them prior to the training process affecting the translation model and the language model in a monolithic one-off manner. Rather, introducing additional alternate decoding paths with the domain specific parallel corpus and/or dictionary, the lexical information addition becomes an intrusive injection to the SMT training process. We denote such ``injection'' as \textbf{Intrusive} on Table 2.1\footnote{Although the intrusive addition of lexical information remains an active field in SMT, it would not be covered beyond this overview under the limited scope of the thesis.}.
+
+Similarly, framing the additional lexical information for domain adaptation, \cite{wu2008domain} experimented with various alternate decoding with a permutation of in-domain and out-domain language models and translation models. Furthermore, to isolate the dictionary from the in-domain parallel corpus, they create phrase tables solely from the in-domain and generic dictionaries separately and jointly before injecting the additional translation model into the alternate decoding step. They reported positive results from several experiment setups (See Section 2.3.5). Injecting lexical information from a different approach, \cite{skadicnvs2013application} added a dense binary feature to indicate the existence of an in-domain term in the SMT training process, the simple yet effective feature showed statistically significant +6.0 BLEU improvements but there was no documentation of the absolute BLEU gains and the dataset used in their experiments. Likewise, \cite{meng2014} proposed a term disambiguation, term consistency and term bracketing features that attempted to improve the SMT decoding process. But they achieved marginal and statistically insignificant BLEU increments over the baseline models. 
+
+The last genre of lexical information addition to statistical machine translation comes from the last step of the SMT search process (aka decoding). Since the decisions made using the additional lexical information at the decoding stage would be finalized in the machine translated output, we denote such lexical information addition techniques at the decoding step as \textbf{Pervasive}. From the literature, there was only one previous work that enforces specific knowledge in the decoding process; when decoding, \cite{meng2014} whenever a hypothesis just translates a source term in a possible target term, they check whether the translation exists in a bilingual term bank. Different from the encoding the existence of a recognized in-domain term as a binary feature and allowing the log-linear decoding to decide the best possible decoding path like in \cite{skadicnvs2013application}, the pervasive technique used in \cite{meng2014} ensures translation consistency of a specific term.\footnote{This is often referred to as ``forced decoding'' and can be easily enabled using the XML decoding feature using the Moses Machine Translation Toolkit}\footnote{We note that during our interaction with the industry partners of the EXPERT project, they have informed us that these pervasive techniques are essential when delivering high quality humanly post-edited translations using the outputs from machine translation systems. We note that in the case of commercial applications, there is no little or no reference translation to determine the BLEU score of the machine translation outputs and the only measure of ``goodness'' of translation comes from the satisfaction given by the clients of the commercial companies. The Volvo incident (Section 2.4.2) reiterates the necessity to  look into these pervasive lexical information addition techniques and more importantly gain insights how the research community should change our notion of machine translation evaluation to suit actual industry needs.}
+
+To make a comparison between \textit{passive} and \textit{pervasive} addition of lexical information, %in \cite{pervasive2015}, 
+we empirically investigate the effects of both approaches on the same dataset and provide further insights on how lexical information can be reinforced in statistical machine translation. The extension of this work is described in Chapter 5, where we compare the coverage of this work in the experiments on using additional lexical information in statistical machine translation.
+
+

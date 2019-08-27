@@ -1,0 +1,145 @@
+ \documentclass[a4paper,11pt,twoside]{report}
+
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=3cm,marginpar=1cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{verbatim}
+\usepackage[round]{natbib}
+\usepackage{color}
+\usepackage{setspace}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage[titletoc]{appendix}
+\usepackage{lscape}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{csquotes}
+\usepackage{tikz}
+\usepackage{tabls}
+\usepackage{float}
+\usepackage{xcolor,colortbl}
+
+\usepackage{float}
+\restylefloat{table}
+
+\setlength{\parskip}{0.7em}
+
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+\usepackage{CJKutf8}
+\usepackage[T1]{fontenc}
+\newenvironment{korean}{%
+  \CJKfamily{mj}}{}
+
+\usepackage{times}
+\usepackage{latexsym}
+
+\DeclareUnicodeCharacter{00A0}{ }
+
+\raggedbottom
+
+\usepackage{epigraph}
+\setlength\epigraphwidth{.8\textwidth}
+\setlength\epigraphrule{0pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lazy formatting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\ngram}{\index{n-gram@{\textit{n}}-gram}{\textit{n}}-gram }
+\newcommand{\ngrams}{\index{n-grams@{\textit{n}}-grams}{\textit{n}}-grams }
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;} 
+
+% Lazy commands
+\newcommand{\bleu}{\textsc{Bleu}}
+\newcommand{\mert}{\textsc{Mert}}
+%\newcommand{\ngram}{\mbox{\textit{n}-gram}}
+
+% Permutation / Combinations
+\newcommand*{\Perm}[2]{{}^{#1}\!P_{#2}}%
+\newcommand*{\Comb}[2]{{}^{#1}C_{#2}}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands for comments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Margin comments
+% Hi there
+\newcommand{\jvg}[1]{\marginpar{\footnotesize \textcolor{blue}{\textbf{JvG:} #1}}}
+\newcommand{\fb}[1]{\marginpar{\footnotesize \textcolor{blue}{\textbf{FB:} #1}}}
+\newcommand{\jon}[1]{\marginpar{\footnotesize \textcolor{blue}{\textbf{JD:} #1}}}
+
+% In-line comments
+\newcommand{\lt}[1]{\{\{\textcolor{red}{\textbf{LT:}} \textcolor{red}{#1}\}\}}
+\newcommand{\redtxt}[1]{\textcolor{red}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Niceties 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{thesis.preamble}
+
+\begin{document}
+\begin{figure}
+\centering
+\includegraphics[width=50mm,scale=0.5]{usaar}
+\end{figure}
+
+\title{\LARGE \textcolor{white}{\bf Panda Hyper Decoder:} \\
+\textcolor{black}{\Huge Using Terminology and Sub-ontological Clusters to Improve Statistical Machine Translation}
+}
+
+\author{Liling Tan \\ \vspace{20mm}
+Supervisor: Josef van Genabith \\ \vspace{2mm}
+Co-supervisor: Francis Bond}
+
+\submitdate{June 2018}
+
+\normallinespacing
+ \maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Preface
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\preface
+\input{preface/declaration}
+\input{preface/acknowledgements}
+\input{preface/abstract}
+\input{preface/summary-german}
+
+
+%\input{acknowledgements/acknowledgements}
+%\input{dedication/dedication}
+%\input{quotes/quotes}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Actual Stuff 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\body
+
+%  Chapter 1
+\input{introduction/introduction}
+
+%  Chapter 2
+\input{background/background}
+
+% Chapter 3
+\input{background/setup}
+
+%  Chapter 4,5,6
+\input{body/body}
+
+%  Chapter 
+\input{conclusion/conclusion}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibliography
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{unified}
+\bibliography{bibs/term-ref,bibs/onto-ref,bibs/nlp-tools,bibs/vector-space,bibs/mt,bibs/cluster,bibs/sts,bibs/liling,bibs/awkward}
+
+\end{document}

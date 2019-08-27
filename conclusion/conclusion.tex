@@ -1,0 +1,39 @@
+\chapter{Conclusion}
+\label{ch:conclusions}
+\vspace{-5mm}
+\epigraph{\itshape I don't know whether machine translation will eventually get good enough to allow us to browse people's websites in different languages so you can see how they live in different countries.}{---Tim Berners-Lee}
+\vspace{-5mm}
+\epigraph{\itshape \textcolor{white}{Translation is the art of failure.}}{\textcolor{white}{---Umberto Eco}}
+\vspace{-5mm}
+
+This thesis contributes novel algorithms for terminology extraction and ontology induction with the aim of improving machine translation with terminological and ontological knowledge. 
+
+We proposed the Language Model Pointwise Mutual Information ${PMI_{LM}}$ measure for terminology extraction. ${PMI_{LM}}$ leverages the robust language model probabilities to estimate the co-occurrence statistics of the individual words within a term using pointwise mutual information. We explored supervised and unsupervised methods of applying the ${PMI_{LM}}$ measure. When evaluated on the Disease Names and Adverse Effects (DNAE) corpus, our unsupervised approach with ${PMI_{LM}}$ achieves similar F-score to a rule-based term extracted in the bio-medical domain; our supervised approach also achieved better F-scores compared to off-the-shelf named-entity recognizer trained on the same corpus. Beyond monolingual term extraction, we extended our term extractor using word alignments to extract bilingual terms (Chapter 3). 
+
+We have empirically verified that adding lexical information from an automatically extracted terminology or a manually crafted dictionary in machine translation in some cases is able to provide statistically significant but marginal BLEU score improvements. However, the number of times to add the lexicon to MT becomes an additional hyperparameter that does not justify the marginal gains (Chapter 4). 
+
+We introduced a novel unsupervised method to induce an ontology using neural vector space. By capturing the vectorial representation of the non-content phrase, `is-a', we project the cross-product of the hyponym and the `is-a' vector as a proxy vector and perform a similarity search across candidate hypernyms to extract the top ranking hypernym(s). Our method achieved competitive results in an ontology induction shared task and the unsupervised and parsimonious nature of the approach makes it easy to scale across multiple knowledge domains (Chapter 6).   
+
+While terminological information can be easily added passively as additional data to train an SMT system, sub-ontological information (i.e. word clusters) can be incorporated in the word alignment step in SMT. We have introduced an exchange based clustering algorithm that provides substantial speed gains in training a phrase-based SMT system without affecting the translation quality (Chapter 7). 
+
+Beyond the terminology and ontology scope of this thesis, we find that measuring the `goodness' of translation automatically is crucial in machine translation. We experimented with ensembles of machine translation evaluation metrics and created a hybrid system with state-of-art neural net embeddings and machine translation metrics. Our system achieved state-of-art performance in the semantic textual similarity task where one of the sub-task is to determine the similarity between the reference and post-edited sentences. Additionally, we have also highlighted the disparity between BLEU scores and human judgments of machine translation output through extensive meta-evaluation (Chapter 5). 
+
+\section{Future Work}
+
+\subsection{Terminology Extraction}
+
+The novelty in the $PMI_{LM}$ measure is to leverage on well-studied language model based statistics in place of traditional co-occurrence. In fact, all statistical co-occurrence based measures\footnote{e.g. Contrastive weights (C-Value) and Non-Contrastive weights (NC-value) \citep{frantzi1998c}, Discriminative Weights (DW) \citep{bonin2010contrastive,enkhsaikhan2007measuring}, etc.}  used for term extraction can be extended using language model probabilities. As the neural tsunami \citep{manning2016computational} hits the NLP field, a natural progression is to use neural nets to train supervised term extraction systems. However, the bottleneck might be the lack of term annotated data. Possibly, using high ranking term candidates from existing term extraction statistics can bootstrap the annotation process. 
+
+\subsection{Ontology Induction}
+
+While a general upper ontology remains an infinite expansion of human knowledge, we see the trend of developing domain specific ontologies designed specifically to provide knowledge for specific tasks \citep{task17semeval2015,task13semeval2016,jurgens-pilehvar:2016:SemEval}. 
+
+Similar to any other NLP task, neural approaches seem to be a good way to achieving state-of-art performance \citep{shwartz-goldberg-dagan:2016:P16-1,2016arXiv160805014S} in ontology induction. Alternatively, combining linguistically motivated rules, existing ontologies would give mileage to improving existing ontology induction system \citep{lefeverhybrid}. 
+
+We can easily extend our unsupervised ontology induction method based on the `is-a' vector by including more phrasal vectors using the patterns that relate hyper-hyponyms as listed in \citep{hearst1992}. Additionally, to verify the efficacy of the phrasal vector in our approach, we can conduct experiments to retro-fit the phrasal vector \citep{faruqui2014retrofitting}.
+
+\subsection{Using Terminology and Ontology in Machine Translation}
+
+As the dusk of phrase-based machine translation draws closer, neural machine translation \citep{luong2015effective,sennrich2015neural,wu2016google,crego2016systran,kalchbrenner2016neural} shows similar tendencies of the `\textit{effective multiplier}'(Brown et al., 1993a). \cite{arthur-neubig-nakamura:2016:EMNLP2016} showed that automatically extracted word alignment probabilities can bootstrap neural machine translation, leading to improved BLEU scores and faster convergence time. There remains a lack of study in the gain in BLEU from incorporating different lexical knowledge resources in neural machine translation as we have explored in this thesis, i.e. \textit{automatic vs. manual lexicon}, \textit{mono-lexical vs. multi-word}, \textit{varying lexicon sizes}, \textit{etc}.)
+
+%Future Work.

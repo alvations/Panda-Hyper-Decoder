@@ -1,0 +1,102 @@
+\chapter{Resources and Experimental Setup}
+\label{chap:setup}
+
+This chapter describes the experimental setups and resources used in this thesis.
+
+\section{Resources used in Machine Translation Experiments}
+
+\subsection{Asian Scientific Paper Excerpt Corpus (ASPEC)}
+
+The Asian Scientific Paper Excerpt Corpus\footnote{\url{http://lotus.kuee.kyoto-u.ac.jp/ASPEC/}} (ASPEC) was created by Japan Science and Technology Agency (JST) in collaboration with the National Institute of Information and Communications Technology (NICT). 
+The Japanese-English subset of the corpus comprises of a 3 million sentences from Japanese-English paper abstracts. The corpus was attends to the demand for machine translation of scientific papers given the increasing number of scientific publications globally. 
+For tuning and evaluation, there are \textasciitilde 1,800 sentences held out for the development and test sets.
+
+% We will refer to the Japanese-English subset as the ASPEC corpus for the rest of the thesis. This corpus will be used for the experiments in Chapter 4 and Chapter 8. 
+
+\subsection{Workshop for Machine Translation (WMT) News Domain Corpus}
+
+The Workshop for Machine Translation news domain translation task provides an array of parallel and monolingual dataset for the participants. We use the English-Russian parallel data from the Common Crawl corpus, News Commentary, and Wikipedia Headlines and Yandex corpus\footnote{\url{https://translate.yandex.ru/corpus?lang=en}} with the monolingual data from the News Commentary and News Crawl 2008-2014 as the training data. For development and evaluation, we the \texttt{news-test2014} dataset for tuning and the \texttt{news-test2015} dataset for testing.
+
+% We will refer to this English-Russian as the WMT EN-RU corpus for the rest of the thesis. 
+
+\subsection{JICST Dictionary}
+
+The JICST is a Japanese-English (JA-EN) translation dictionaries (JICST, 2004) from the Japan Science and Technology Corporation. It contains 800,000 entries for technical terms extracted from scientific and technological documents. 
+The entries in the dictionary are manually verified to be correct and specific to the science and technology domain.
+On average 3-4 dictionary entries are found for each sentence in the WAT corpus development set.
+
+This dictionary will be the main source of hand-crafted lexical information that we are attempting to inject into the data of the same domain to highlight the use of in-domain terminology influence on machine translation.
+
+%The rest of the thesis will refer to this dictionary as the JICST dictionary. 
+
+\newpage
+\subsection{The Phrase-based SMT Configuration used throughout the Thesis}
+
+Unless a different experimental setting is explicitly stated, for all experiments we used the phrase-based SMT implemented in the Moses toolkit \citep{koehn2007moses} with the following experimental settings:
+
+\begin{itemize}
+
+\item {\tt MGIZA++} implementation of IBM word alignment model 4 with grow-diagonal-final-and heuristics for performing word alignment and phrase-extraction \citep{koehn2003statistical,och2003systematic,gao2008parallel}
+
+\item Bi-directional lexicalized reordering model that considers monotone, swap and discontinuous orientations \citep{koehn2005europarl,galley2008simple}
+
+\item Language modeling is trained using {\tt KenLM} with maximum phrase length of 5 with modified Kneser-Ney smoothing \citep{kenlm,kneser1995improved,chen1999empirical}
+
+\item Minimum Error Rate Training (MERT) to tune the decoding parameters \citep{mert}.
+
+\item For English translations, we trained a true-casing model to keep/reduce tokens’ capitalization to their statistical canonical form \citep{wangknightmarcu2006,lita2003} and we recased the translation output after the decoding process
+
+\end{itemize}
+
+\noindent Additionally, we applied the following methods to optimize the phrase-based translation model for efficiency:
+
+\begin{itemize}
+\item To reduce the size of the language model and the speed of querying the model when decoding, we used the binarized trie-based quantized language model provided in {\tt KenLM} \citep{kenlmTrieQuantized,whittaker2001quantization}
+
+\item To minimize the computing load on the translation model, we compressed the phrase-table and lexical reordering model \citep{junczys2012phrasal} % cmph is just a hash library that the compact phrase table makes use of
+
+\end{itemize}
+
+\newpage
+\section{Resources used in Terminology and Ontology Extraction}
+
+\subsection{Disease Names and Adverse Effect (DNAE) Corpus}
+
+The DNAE corpus\footnote{\url{https://www.scai.fraunhofer.de/en/business-research-areas/bioinformatics/downloads/corpus-for-disease-names-and-adverse-effects.html}} is annotated with a subset of the medical terms of the following medical term databases:
+
+\begin{itemize}[noitemsep]
+\item Medical Subject Headings (MeSH)
+\item Medical  Dictionary  for  Regulatory  Activities  (Med-DRA)
+\item International   Classification   of   Diseases   (ICD-10
+\item Systematized    Nomenclature    of    Medicine–ClinicalTerms (SNOMED CT)
+\item Unified  Medical  Language  System  (UMLS)
+\end{itemize}
+
+The corpus was used by \cite{Hanisch2005} to evaluate their ProMiner term exractor. We use the same resource to compare our approach with \cite{Hanisch2005}.
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{lrr}
+    \textbf{Corpus Statistics}                                              & ~          \\ \hline
+    No. of Documents                               & 400     &~   \\
+    No. of Sentences                               & 4,380    &~   \\
+    No. of Disease Mentions  (no. of unique)       & 1,428 &(628) \\
+    No. of Adverse Effect Mentions (no. of unique) & 813 &(440)  \\
+    No. of Total D+A Mentions (no. of unique) & 2,241 &(1068)  \\
+    \end{tabular}
+\caption{Disease Names and Adverse Effect (DNAE) Corpus Statistics}
+\label{table:dnae}
+\end{table}
+
+Table 3.1 presents the document statistics of the DNAE corpus. There are 400 documents that contain 4,380 sentences in total. There are a total of 2,241 manually annotated Disease and Adverse Effects mentions, of which 1,068 are unique. 
+
+
+\subsection{WikiFood Corpus}
+
+The food domain corpus (WikiFood) was built for an ontology induction task at SemEval-2015\footnote{\url{http://alt.qcri.org/semeval2015/task17/index.php?id=data-and-tools}} (Tan et al. 2015). The corpus contains 869 food terms and the relevant Wikipedia articles that contain these terms. Of those terms 752 terms are multi-words and from the 752 multi-words, we extracted 42,851 sentences (1,207,677 tokens) that contains the multi-word terms. 
+
+\subsection{SemEval TaxEval Ontologies}
+
+The SemEval-2015 Taxonomy Extraction Evaluation (TaxEval) task addresses taxonomy learning without the term discovery step, i.e. the terms for which to create the taxonomy are given \citep{task17semeval2015}. The focus is on creating the hypernym-hyponym relations. We will be using this dataset to evaluate our hypernym induction system using the \textit{`is-a'} vector.
+
+In the TaxEval task, ontologies are evaluated through comparison with gold standard taxonomies. The gold standards used in evaluation are the \emph{ChEBI ontology} for the chemical domain \citep{degtyarenko2008chebi}, the \emph{Material Handling Equipment taxonomy}\footnote{http://www.ise.ncsu.edu/kay/mhetax/index.htm} for the equipment domain, the \emph{Google product taxonomy}\footnote{http://www.google.com/basepages/producttype/taxonomy.en-US.txt} for the food domain and the\emph{ Taxonomy of Fields and their Different Sub-fields}\footnote{http://sites.nationalacademies.org/PGA/Resdoc/PGA\_044522} for the science domain. In addition, all four domains are also evaluated against the sub-hierarchies from the WordNet ontology that subsumes the Suggested Upper Merged Ontology \citep{PeaseEtAl2002sumo}.

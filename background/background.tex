@@ -1,0 +1,46 @@
+\chapter{Background}
+\label{chap:background}
+
+This chapter provides an literature review of the related work from the field of Machine Translation (Section 2.1 and 2.2), the use of lexical information in Statistical Machine Translation (Section 2.3), a survey of the state-of-art terminology extraction (Section 2.4.1 and 2.4.2) and ontology induction techniques (Section 2.4.3).
+
+The \textit{most relevant background} to the work described in the following chapters are:
+
+\begin{itemize}
+\item \textbf{Section 2.2} on Phrase-based Machine Translation\footnote{This is the main machine translation paradigm we used in this thesis.}
+\item \textbf{Section 2.3.7} on an overview of integrating additional lexical information in SMT
+\item \textbf{Section 2.4.1} on a brief survey of term extraction techniques and 
+\item \textbf{Section 2.4.2} that motivates the importance of terminology in machine translation
+\item \textbf{Section 2.4.3} on a brief survey of ontology induction techniques
+\item \textbf{Section 2.4.4} describing the phrased-based SMT configuration used throughout the thesis\footnote{Unless explicitly stated in the prose, all SMT experiments described in this thesis used this phrase-based configuration.}
+\end{itemize}
+
+\newpage
+% Chapter 2.1
+\input{background/mt-intro}
+% Chapter 2.2
+\input{background/pbmt}
+% Chapter 2.3
+\input{background/dicmt}
+
+% Chapter 2.4
+\input{background/term-onto}
+% Chapter 2.4.1
+\input{background/term}
+% Chapter 2.4.2
+\input{background/term-in-mt}
+% Chapter 2.4.3
+\input{background/onto}
+
+\section{Summary}
+
+Integrating additional lexical information into statistical machine translation is nothing new but the marginal gains in BLEU scores across the literature is somewhat disturbing given the industrial importance of translating terminologies correctly. This thesis seeks to take a closer look at how to use additional lexical resources in the SMT training process. 
+
+Ontologies are useful knowledge resources that translators use to familiarize themselves with domain specific knowledge. The manual creation of ontology is time and labor consuming, this thesis proposes a novel approach to ontology induction using neural nets and explores the endocentricity of hypernyms within the ontology to better understand how we can effectively automatically induce high precision ontologies.
+
+The lack of `semantic knowledge' in the statistical machine translation paradigm suggests that we should look into ways to inject meaning into the probabilistic system. In this thesis, we will present joint work on scaling sub-ontological knowledge (i.e. word clusters) and investigate the improvements made by this to statistical machine translation.
+
+
+
+
+
+

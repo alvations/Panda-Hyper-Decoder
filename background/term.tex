@@ -1,0 +1,141 @@
+\subsection{A Survey of Term Extraction Techniques} \label{sec:terminology}
+
+A \textbf{term} is the \emph{designation of a defined concept in a special language by a linguistic expression}; a term may consist of one or more words. A \textbf{terminology} refers to the set of terms representing the system of concepts of a particular subject field (ISO 1087). The International Organization of Standardization (ISO) history of terminology traces back to \citeauthor{wuster1969}'s \citeyearpar{wuster1969} seminal article on \emph{Die vier Dimensionen der Terminologiearbeit}\footnote{The Four Dimensions of Terminological Work} which the ISO Technical Committee 37 (ISO/TC 37) builds upon in providing the common standards related to terminology work. 
+
+A later formulation states that a term is \emph{any conventional symbol representing a concept defined in a subject field}; a terminology is the aggregate of terms, which represent the system of concepts of an individual subject field \citep{felber1984}. The core characteristic of a term is defined as \textbf{termhood}, i.e. \emph{the degree to which a linguistic unit is related to a domain-specific context} \citep{kageura1996}. In the case of multi-token terms, additional substantiation is necessary to check its \textbf{unithood}, i.e. \emph{the degree of strength or stability of syntagmatic combinations and collocations} \citep{kageura1996}.
+
+Single token terms can be perceived as a specialized vocabulary\footnote{aka. domain-specific vocabulary} that is used specifically in a domain. The surface word representing the single token term is often polysemous and the usage of the term within a specialized domain may narrow down the set of possible senses or single out a disambiguated sense of the word. For example, the term ``\emph{classifier}" can refer to:
+
+\begin{itemize}[nosep]
+\item[(i)] a morpheme used to indicate the semantic class to which the counted item belongs, or 
+\item[(ii)] a pre-trained model to identify/distinguish different classes within a dataset. 
+\end{itemize}
+The first definition is mainly used within linguistic research, the second within the machine learning domain. However, when \textit{"classifier"} is used in computational linguistics, its usage is ambiguous. The latter definition of classifier tends to be used more often than the former. 
+
+In English, terms are more often multi-word expressions (MWE), primarily nominal phrases, made up of a head noun and its complement adjective(s), prepositional clause(s), or compounding noun(s). Commonly, a complex term can be analysed in terms of a head with one or more modifiers \citep{hippisley2005head}.
+
+\subsubsection{Rule-based Term Extraction}
+
+The linguistic properties of a term can be characterized by its syntactic context. Previous approaches to term extraction use these linguistics properties in form of Part-Of-Speech (POS) patterns. For example, \cite{justeson1995} and \cite{daille1996} used the following POS patterns to extract nominal phrasal terms:
+\begin{itemize}
+\item[] \textbf{EN}: ((Adj$\vert$(Noun)+$\vert$((Adj$\vert$Noun)*(NounPrep)?)(Adj$\vert$Noun)*)Noun$_{head}$
+\item[] \textbf{FR}: Noun$_{head}$ (Adj$\vert$(Prep(Det)?)?Noun $\vert$V$_{inf}$ )
+\end{itemize}
+In the case of English, the compulsory head noun is in the final position preceded by its modifiers whereas in French, it is in the first position followed by its modifiers. The multi-word nature of Romance languages produces more terminological phrases, whereas for Germanic languages, the compounding nature of nouns derives more single token lexicalized terms. For example, an equivalent POS pattern for German would have to consist of a combination of POS and morphemic pattern:
+
+\begin{itemize}
+\item[] \textbf{DE}: ((AC$\vert$NC)+$\vert$((AC$\vert$NC)*(Noun$\vert$Prep)?)(AC$\vert$NC)*)Noun$_{head}$
+\end{itemize}
+
+\noindent Similar to the (Adj$\vert$Noun) pattern in English, the German (AC$\vert$NC) pattern is a combination of adjective/noun with occasional connective morpheme where a connective morpheme might be necessary to join the adjacent adjectives/nouns. For example, in the German compound noun \emph{Mausefalle} (\emph{Mousetrap}), the \emph{Falle} (\emph{trap}) is head noun in the final position and the word \emph{Maus} (\emph{mouse}) attaches to the head noun with the \emph{-e-} connective morpheme between the nouns.
+
+Linguistic patterns such as these are usually used as filters to generate a list of multi-word
+terms of high unithood followed by further statistical measures to re-rank or reduce the list \citep[e.g.][]{bourigault1996lexter}. \cite{frantzi2000automatic} differentiated two types of filters, viz. a close filter is strict about which strings it permits and an open filter allows more strings in the POS patterns. For example, the English pattern is an open filter that allows a wider range of multi-word term candidates than simply using a /Noun+/ that only allows delexicalized compounding nouns. 
+
+Although state-of-art term extraction systems do not solely rely on linguistic patterns, the pattern templates are used as filters to remove candidate terms from the system output \citep[e.g.][]{zhang2004comparison,gomez2009parallel}.
+
+
+\subsubsection{Statistical Term Extraction}
+
+The basis of all statistical properties in multi-word term extraction relies on the frequency of a token or an n-gram in a corpus. Frequency counts are combined to compute co-occurrence measures (aka. word/lexical association measures) that quantify the probabilistic occurrence of a word with its neighbouring words. Cooccurrence measures are used to estimate the propensity for words occurring together.
+
+Psycholinguistic evidence shows that word association norms can be measured as a subject’s responses to words when preceded by associated words \citep{palermo-jenkins} and humans respond quicker in the case of highly associated words within the same domain \citep{church1990word}.
+
+Common co-occurrence measures, e.g. Dice coefficient, Mutual Information (MI), Pointwise Mutual Information (PMI), Log-Likelihood Ratio (LLR) and Phi-square ($\phi$$^{2}$) rely on three types of frequency information; (i) the frequency of a word occurring in the corpus, (ii) the joint frequency of a word occurring with another word, (iii) the total number of words in the corpus. Formally we describe them as follows:
+
+\begin{itemize}[noitemsep]
+\item[] Let \emph{f$_{i}$} be the frequency of the occurrence of a word, $i$
+\item[] Let \emph{f$_{j}$} be the frequency of the occurrence of another word, $j$
+\item[] Let \emph{f$_{ij}$} be the frequency of the word $i$ and $j$ occurring simultaneously
+\item[] Let \emph{f$_{ij’}$} be the frequency of the word $i$ occurring in the absence of $j$
+\item[] Let \emph{f$_{i’j}$} be the frequency of the word $j$ occurring in the absence of $i$
+\item[] Let \emph{f$_{i’j’}$} be the frequency of both words $i$ and $j$ not occurring
+\item[] Let $N$ be the size of the corpus
+\end{itemize}
+
+We further simplify the notion by having $a$ = \emph{f$_{ij}$} , $b$ = \emph{f$_{ij’}$} , $c$ = \emph{f$_{i’j}$} and $d$ =\emph{ f$_{i’j’}$}.
+
+These basic statistical properties of word co-occurrence are combined in various ways to form more complex co-occurrence measures. The common co-occurrence measures are defined as follows:
+
+\begin{eqnarray} 
+Dice(i,j) & = & \frac { 2*a }{ ({ f }_{ i }+{ f }_{ j }) }  \\[1em]
+PMI(i,j) & = & \log { a } -(\log { { f }_{ i } } +\log { { f }_{ j }) }  \\ [1em]
+MI(i,j) & = & \log { a } -\log { (a+b) } -\log { (a+c) }  \\ [1em]
+LLR(i,j) & = & a*\log { a } +b*\log { b } +c*\log { c } +d*\log { d }  \nonumber\\  
+&  & -(a+b)*\log { (a+b) } -(a+c)*\log { (a+c) }  \nonumber\\  
+&  & -(b+d)*\log { (b+d) } -(b+d)*\log { (c+d) }  \nonumber\\  
+&  & +(a+b+c+d)*\log { (a+b+c+d) } 
+\end{eqnarray}
+\begin{eqnarray} 
+{ \phi  }^{ 2 } & = & \frac { (a*d-b*c)^{ 2 } }{ (a+b)(a+c)(b+c)(b+d) }  
+\end{eqnarray} 
+
+
+Distributional properties can be viewed as localized statistical properties. The statistical properties in the previous section make use of global count occurrences of words to extract co-occurrence statistics between words. The distributional properties relate to (i) the number of documents that a word occurs within a corpus and/or (ii) the differing counts of a word occurring across two or more corpora.
+
+A common measure is the term frequency – inverse document frequency (\emph{tf-idf}). The term frequency reflects the global counts of a word and the inverse documen frequency measures the spread of the word throughout the document collection. Formally,
+
+\begin{itemize}[noitemsep]
+\item[] Let \emph{f$_i$} be the no. of times a term occurs in all documents
+\item[] Let \emph{n$_i$} be the no. of documents where the term $i$ occurs
+\item[] Let \emph{N$_{doc}$} be the total no. of documents in a corpus
+\item[] The term frequency: $tf$ = \emph{f$_i$}
+\item[] The document frequency: $df$ = \emph{n$_i$} / \emph{N$_{doc}$}
+\item[] In logarithmic space, the inverse document frequency: \emph{idf} = \emph{log}(\emph{N$_{doc}$} / \emph{n$_i$})
+\item[] And, \emph{tf-idf} = $tf * idf$
+\end{itemize}
+
+A high word frequency might favor the global statistical co-occurrence measure however if the mass of the counts comes from a low number of documents, it will reflect a low tf-idf score deeming the term to be document-specific.
+
+Other than using the distributional properties of words within a corpus, it is also helpful to compare the distribution of words across corpora. By comparing a domain specific corpus distribution to a general corpus, we can determine the weirdness of ratio of term frequencies across the corpora \citep{ahmad1999university}. The weirder a term, the more domain-specific a term is and the more likely it is to be a term candidate to form the terminology of a specific domain. We can simply refer to the relative frequency ratio across the corpora as such:
+
+\begin{equation}
+weirdness(i)==\frac { { f }_{ i }^{ D }*{ N }_{  }^{ G } }{ { f }_{ i }^{ G }*{ N }_{  }^{ D } } 
+\end{equation}
+
+where ${ f }_{ i }^{ D }$ is the frequency of a term $i$ in a domain-specific corpus and ${ f }_{ i }^{ G }$ is the frequency of the same term in a generic corpus;  ${N }_{  }^{ G }$ and ${N }_{  }^{ G }$ is the total number of tokens in the generic corpus and a domain specific corpus.
+
+\cite{frantzi1998c,frantzi2000automatic} introduced a method to use both linguistic and statistical information using C-value and NC-value. They start with a set of POS patterns and a stop word list to pre-filter possible n-grams before they calculate the n-gram’s termhood using the C-value metric and the concept of nested terms. Nested terms refer to those terms that appear within other longer terms and may or may not appear by themselves in the corpus \citep{frantzi1998c}, e.g. ‘floating point’ is a nested term because it is also found in ‘floating point arithmetic’.
+
+For non-nested terms, the C-value accounts for the length of the term candidate and its frequency. For nested terms, the C-value subtracts the average number of times the term is nested in other term n-grams. Thus if ‘floating point’ occurs as a nested term candidate as often or more than it does as an independent term, then it will have low C-value.  Formally:
+
+\begin{itemize}[noitemsep]
+\item[] Let $NG$ be the set of all n-grams possible from a corpus.
+\item[] Let $T$ be the set of all n-grams possible after using a POS pattern filter such that $T\subset NG$
+\item[] Let $t$ be a candidate term that is filtered from the full list of n-grams, and
+\item[] Let \emph{T$_N$} be the set of terms that contains nested terms with t such that $t\subset T_N \subset T$
+\end{itemize}
+
+Given the definition of \emph{T$_N$}, we calculate the \emph{C-Value} of a term $t$ as follows:
+
+\begin{equation}
+C-value(t)=
+	\left \{
+		\begin{matrix} 
+		\log { |t| } *{ f }_{ t }  & if \ t \ is \ nested\\
+		\log { |t| } *{ (f }_{ t }-{ 1 }/{ { f }_{ { t }_{ N } } }*
+			\sum _{ i\in { T }_{ N } }^{  }{ { f }_{ i } }  & otherwise
+		\end{matrix} 
+	\right .
+\end{equation}
+
+From the C-Value equation, the C-value will be high for long non-nested strings with high frequency. The limitation of the C-value is that it can only be applied to multi-word terms.
+
+And extension of the C-value is the NC-value which accounts for the context in which the term occurs. The NC-value re-ranks the term candidates extracted from the C-values by looking into the previous words occurring before the term. This is motivated by the notion of extended terms, where the terms constrain the modifiers they accept \citep{sager1980english}. This contextual constraint manifests itself as a weight to account for the number of nested terms within in the candidate term; it is then normalized by the cumulative context weight (CCW). Formally it is defined as follows:
+
+\begin{equation}
+NC-value(t)=0.8*C-value(t)+0.2\sum _{ c }^{ { C }_{ t } }{ f(c|t) } 
+\end{equation}
+
+where
+
+\begin{itemize}[noitemsep]
+\item[] $C-value(t)$ is the C-value of $t$
+\item[] C is the set of distinct context words of $t$
+\item[] $f(t|c)$ is the conditional probability of $t$ given that $c$ occurs within the context 
+\end{itemize}
+
+\citeauthor{frantzi2000automatic}'s \citeyear{frantzi2000automatic} notion the $f(t|c)$ probability differs from the common Bayes rule derivation of $f(t,c)/f(c)$, instead, the conditional probability here is calculated by taking $f(t,c) * c_t / n_t $, where $c_t$ is the no. of terms that have the context word $c$ and $n_t$ is the no. of total terms extracted and filtered from the corpus.
+
+C-values and NC-values have proved to perform well \citep{zhang2008comparative,lossio2013combining} (Zhang et al. 2008,). However it does not measure termhood as defined by \cite{kageura1996}. The formulation of the NC-value measures how consistently a phrase can be a term but it does not exactly contribute to select any n-grams to be a term. Inherently, the term candidate selection is handled by the POS pattern filter and the NC-value reranks the terms to further threshold the list of candidates. Although it was a solution created close to a decade ago, it is still a common algorithm used for commercial and academic term extraction\footnote{https://code.google.com/p/jatetoolkit/wiki/JATEIntro}
+

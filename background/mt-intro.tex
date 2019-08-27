@@ -1,0 +1,101 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SMT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Statistical Machine Translation}
+
+Machine Translation (MT) is the computational task to automatically translate between human languages.
+
+The history of automatic translation traces back to  17th century ideas of a universal language at the demise  of Latin as the global \emph{lingua franca}
+%The motivation was to create a \emph{``rational"} or \emph{``logic"} system of terse and unambiguous international communication that supersede natural language communication 
+\citep{hutchins2000early}.
+
+Before the invention of modern day computing machines, attempts were made to create \emph{mechanical dictionaries} that tried to map words/ideas/concepts into numerical code to mediate between languages. The most influential approach is perhaps Leibniz's (1714) monadic theory that encapsulates symbolic thoughts and formal logic \citep{busche2009gottfried} and assumes that cross-lingual understanding between languages is a matter of mapping natural language into monads. In one of his memos, \emph{The Art of Discovery} (1685), Leibniz wrote:
+
+\blockquote{\emph{This [monadic] language will be the greatest instrument of reason [for] when there are disputes among persons, we can simply say: Let us calculate, without further ado, and see who is right.}}
+
+In the early days of modern day machine translation in the 1960s, \citeauthor{becher1962mechanischen}'s \citeyearpar{becher1962mechanischen} work titled \emph{`Zur mechanischen Sprachübersetzung: ein Programmierungversuch aus dem Jahre 1661'} expresses that the historical ``mechanical dictionary" approaches foreshadowed certain principles of machine translation. The aim of \emph{mechanical dictionaries} are not unlike the modern day natural language processing (NLP) task of creating a multilingual ontology and word/concept mapping like Open Multilingual WordNet (OMW) \citep{bond2012survey} and multilingual Ontonotes \citep{weischedel2010ontonotes}.
+
+In the 1930s, patents for a \emph{``general purpose translation using a mechanical multilingual dictionary"}  and \emph{``mechanical translations via universal grammatical functions"} were granted by France and Russia to Georges Artsrouni and Petr Trojanski respectively. The Statistical Machine Translation (SMT) paradigm is largely attributed to Warren Weavers memorandum to the Rockfella foundation in 1949 \citep{weaver1955translation}:
+
+\blockquote{\emph{It is very tempting to say that a book written in Chinese is simply a book written in English which was coded into the ``Chinese code". If we have useful methods for solving almost any cryptographic problem, may it not be that with proper interpretation we already have useful methods for translation?}}
+
+Data-driven SMT has developed rapidly with the introduction of IBM word alignment models (\citealp{brown1990statistical,brown1993mathematics}) and a \emph{word-based} SMT model which translates word-for-word. The word-based model was later superseded by  phrase-based models (\citealp{ochneymaxentsmt,marcu2002phrase,zens2002phrase,koehn2003statistical,koehn2004pharaoh}) which rely on the word-alignment methods developed by its word-based predecessor \citep{al1999statistical}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PB-SMT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Phrase-Based SMT}
+
+Phrase-Based Statistical Machine Translation (PB-SMT) models translate contiguous sequences of words from the source sentence to contiguous words in the target language. In this case, the term \emph{phrase} does not refer to the linguistic notion of syntactic constituent but the notion of \ngrams. \cite{knight1999decoding} showed that decoding word/phrase-based models involve search problems that grow exponentially with sentence length.
+
+Phrase-based models significantly improve on word-based models, and work especially well for closely-related languages. This is mainly due to the modelling of local reordering and the assumption that most orderings of contiguous \ngrams are monotonic. However, this is not the case for translation between language pairs with divergent syntactic constructions; e.g. when translating between SVO-SOV languages. 
+
+\cite{tillmann2004unigram} and \cite{al2006distortion} proposed several sophisticated lexicalized reordering and distortion models to address most long-distance reordering issues. Alternatively, to overcome reordering issues with a simple distortion penalty, \cite{zollmann2008systematic} memorized a larger phrase \ngram sequence from very large training data and allow larger distortion limits; it achieves similar results to more sophisticated reordering techniques with fewer training data. In practice, reordering is set to a small window and \cite{birch2010metrics} showed that phrase-based models tend to perform poorly even for short and medium range reordering.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Others
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Other SMT Models}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hiero
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Hierarchical Phrase-Based SMT}
+Hierarchical phrase-based machine translation (aka \emph{hiero} or HPB-SMT) extends the phrase-based models concept of phrase from naive contiguous words to a sequence of words and sub-phrases \citep{chiang2005hierarchical}. Within the hiero model, translation rules are created using make use of the phrases extracted from the PB-SMT and the reordering of the subphrases. For example, \emph{`She likes him"} is translated to German as \emph{``Er gef\"{a}llt ihr"}\footnote{\emph{Er} is the third-person singular masculine pronoun, while \emph{ihr} is the third-person singular feminine pronoun}; this reordering can be expressed as a lexicalized \emph{gappy} synchronous hierarchical rule using \emph{X$_{1}$} and \emph{X$_{2}$} as placeholders for  subphrases.
+
+
+\begin{equation}
+< X{_1}\ likes\ X{_2} ,\ X{_2}\ gefaellt\  X{_1} >
+\end{equation}
+
+Hierarchical phrase-based models can also model discontiguous phrases such as the long distance dependence between the verb and its negation in German, e.g.
+
+\begin{equation}
+< X{_1}\ do\ not\ like\ X{_2}\ ,\ X{_2}\ gefaellt\  X{_1}\ nicht>
+\end{equation}
+
+In the hiero model, these translation rules are the production rules of a Synchronous Context-Free Grammar (SCFG). Target language translations are generated from both the SCFG parses and the surface string inputs. The translation rules are induced from a parallel corpus without linguistic annotation from any grammatical formalisms. The induction is based on distributional properties of the PB-SMT style phrases. Arguably, SCFG provides minimal subphrasal lexical selection syntax that is agnostic to any linguistic commitments or assumptions. 
+
+Although the hiero model provides more robust translation possibilities, the size of the grammar is exponential because of the arbitrary re-orderings between the source and target language. \cite{zhang2006synchronous} introduced a linear-time algorithm for factoring syntactic re-orderings by restricting synchronous rules on the source-side grammar to binary branching nodes when possible. The binarization of the SCFG rules significantly improves the speed and accuracy of the hiero models. 
+% Alternatively, \cite{huang2007binarization} binarized the target side grammar and similar results to source side SCFG binarization. 
+
+Most open-sourced implementations of machine translation decoders support both phrased-based and binarized SCFG hiero models, they differ primarily by the programming language used in the implementation and the varying computing structures used to parse the trees and the formalisms used to present the same phrased-based and hiero model \citep{koehn2007moses,hoang2008design,li2009joshua,weese2011joshua,cdec}.
+
+Still, neither the basic phrase-based model nor the basic hierarchical phrase-based model incorporate any linguistic structure such as syntax, morphology, or semantics beyond surface strings.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Factored SMT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Factored SMT}
+
+In the early days of SMT, the importance of linguistic information to translation was recognized \citep{brown1993mathematics}:
+
+\blockquote{\emph{But it is not our intention to ignore linguistics, neither to replace it. Rather, we hope to enfold it in the embrace of a secure probabilistic framework so that the two together may draw strength from one another and guide us to better natural language processing systems in general and to better machine translation systems in particular.}}
+
+Factored SMT embarked on the task of effectively incorporating linguistic information from taggers, parses and morphological analyzers into the machine translation pipeline. It is motivated by fact that (i) linguistic information provides a layer of disambiguation to address the ambiguity of natural language, (ii) generalized translation of out-of-vocabulary (OOV) words can overcome sparsity of training data and (iii) arbitrary limits are replaced with linguistic constraints put in place in the decoding process too keep the search space tractable \citep{Hoang09aunified,koehn2010moreannotations,hoang2011improving}.
+
+The factored model extends the phrase-based model by reformulating each word as a vector of factors and each input factor produces an equivalent output factor in the target language. For example, a vector of a source word can be made up of its surface form lemma, POS tags and morphological annotations decoded into a vector in the target language. Then the surface form of the target language word is generated given the decoded vector. The decoding process to find the most appropriate translation follows the log-linear model as in the phrase-based model where the translation step and the generation step are regarded as additional components to the log-linear model (in addition to the existing language model and reordering model in phrase-based MT) \citep{koehn2007factored}. 
+
+The integration of morphological information remains an impetus for deploying factored based models when (i) translating from morphologically rich languages (that cause model sparsity) due to under-sampled morphological variants of the same word \citep{bojar2007english} or (ii) translating from morphological poor languages (that causes spurious ambiguities) to morphological rich languages that requires word declensions and conjugations that are lacking in the source language \citep{ramanathan2009case}.
+
+
+\subsubsection{Syntax-Based SMT}
+
+Early work on syntactically informed\footnote{ ``Syntactically informed'' refers to the linguistic theory of syntax.} SMT developed in tandem with the various components of phrase-based SMT (i.e. reordering, distortion, hiero, etc.). Based on the finite state automata, \cite{wu1997stochastic} and \cite{wu1998machine} introduced the notion of Inversion Transduction Grammars (ITG) and Stochastic Bracketing Transduction Grammars (SBTG) where every terminal symbol (word/phrase) is marked for two output streams, (i) the non-terminal node to parse upwards towards the top of the parse tree and (ii) the equivalent terminal node on other language; the non-terminal nodes are represented as classes of derivable substring pairs. 
+
+\cite{yamada2001syntax} presented a syntax-based SMT model that transforms a source language parse tree to its target language counterpart by applying stochastic operations at each node. By doing so, they can exploit the rich parsing resources for  English. In their approach, they flattened trees to allow more reordering possibilities. The decoding process for their syntax-based model emulates a bottom-up parsing problem where nodes are translated individually and hypothesis pruning and hypothesis combinations are applied when the parser goes towards the top of the tree. 
+
+The stochastic operations proposed in \citeauthor{yamada2001syntax} were formalized as a theory to automatically derive from word-aligned corpora a minimal set of syntactically motivated transformation rules \citep{ghkm2004}. These transformation rules (aka \emph{GHKM rules}) map the input string (words/phrases) to the output tree fragments and \cite{galley2006scalable} showed that learning the probabilities of the rules with the EM algorithm produce ``contextually-richer tree" (i.e. SCFG rules with more nodes). Likewise, syntactic parses and the surface string input can be feed into the decoder to generate phrases \citep{Huang2006T2S} and the annotations used to generate the transformation rules do not need to be restricted to syntactically structured trees, \cite{liu2008improved} extended the model with semantic role labels. These models are usually dubbed the \emph{String2Tree} and \emph{Tree2String} SMT models.
+
+Rather than using a single best syntactic parse, \cite{mi2008forest} showed that using a forest of n-best syntactic parses of the source sentence improves upon the 1-best tree-based translation models. \cite{neubig13travatar} maintains a working implementation of the Forest2String MT systems using tree transducers\footnote{http://www.phontron.com/travatar/}.
+
+The idea of generating GHKM rules from annotations is not restricted to a string input or output; \emph{Tree2Tree} models can be learnt from word-aligned corpora. \cite{zhangt2t} mapped source language tree fragments to target language fragments using Synchronous Tree Substitution Grammar (S-TSG). The Tree2Tree model is able to capture non-syntactic constituent phrases and discontinous phrases using linguistically structured features, additionally, it supports stratified structure reordering of larger trees. Similarly, \cite{shieber2007probabilistic} proposed a Tree2Tree model using probabilistic Synchronous Tree Adjoining Grammar\footnote{It is worth noting that the non-probabilistic S-TAG grammar formalism precedes the ITG, SBTG and SCFG \citep{shieber1990synchronous}} (S-TAG).
+
+\subsubsection{Dependency Models and Deep Tecto MT}
+ 
+\cite{lin2004path} introduced path-based models that extract a set of transfer rules from the corpus and each rule transforms a path in the source language dependency tree into a target language dependency tree fragment; effectively searching for the best translation problem becomes a graphical problem to find the minimum path that covers the source language dependency tree. \cite{menezes2005dependency} proposed a shallower dependency treelet approach uses the source side dependency as a tree-based ordering model and suggested that the model can be improved by adding information such as semantic roles or morphological features. 
+
+Like the hiero model, \cite{xiong2007dependency} extracted transfer rules using the source side dependency treelet and gappy target language string fragments. \cite{shen2008new} presented a String2Tree model that extracted gappy string fragments in the source language mapping to the target language dependency treelet; this exploits a target dependency language model that was previously unavailable for the dependency Tree2String model. 
+
+\cite{tectomt2003} proposed a tectogrammatical model (TectoMT) that is also based on dependency trees, in addition, TectoMT includes morphological analysis and generations \citep{eisner2003learning,vzabokrtsky2008tectomt,popel2010tectomt}. Similar to how phrase-based models map smaller fragments to larger ones, \cite{bojar2008phrase} extended the TectoMT model by mapping arbitrary connected fragments of the dependency tree. 

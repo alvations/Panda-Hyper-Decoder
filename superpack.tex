@@ -1,0 +1,219 @@
+\documentclass[11pt]{article}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage[round]{natbib}
+\usepackage{color}
+\usepackage{setspace}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage[titletoc]{appendix}
+\usepackage{lscape}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{csquotes}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages Language
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{CJKutf8}
+\usepackage[T1]{fontenc}
+
+\newenvironment{korean}{%
+  \CJKfamily{mj}}{}
+
+\usepackage{times}
+\usepackage{latexsym}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages for presenting XML code
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{color}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+\definecolor{orange}{rgb}{1,0.5,0}
+
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray}\upshape
+}
+
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{darkblue},
+  keywordstyle=\color{cyan},
+  morekeywords={xmlns,version,type}% list your attributes here
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Commands for margin comments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\fb}[1]{\marginpar{\footnotesize \textbf{FB:} #1}}
+\newcommand{\jvg}[1]{\marginpar{\footnotesize \textbf{JvG:} #1}}
+\newcommand{\lt}[1]{\textbf{LL:} \textcolor{red}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Customize forced tab.
+\newcommand{\tab}[1]{\hspace{.2\textwidth}\rlap{#1}}
+
+% Customized argmin operator
+\DeclareMathOperator*{\argmin}{arg\,min}
+% Customized argmin operator
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+
+\title{\textbf{Panda Hyper Decoder}}
+\author{Liling Tan}
+
+
+\date{}
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CJK Examples.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{CJK Examples}
+
+\subsection{Chinese}
+\textbf{ZH Input}: \begin{CJK*}{UTF8}{gbsn}应有尽有 的 丰富 选择 定 将 为 您 的 旅程 增添 无数 的 赏 心 乐事\end{CJK*}
+
+\subsection{Japanese}
+\textbf{JP Input}: \begin{CJK*}{UTF8}{min}種の量が増加する程，生成物の粒子寸法は減少した。\end{CJK*}
+\\ \\
+(Hiragana \begin{CJK*}{UTF8}{min}ひらがな\end{CJK*} and Katakana \begin{CJK*}{UTF8}{min}カタカナ\end{CJK*}) and logographic (Kanji \begin{CJK*}{UTF8}{min}漢字\end{CJK*})
+
+\subsection{Korean}
+\textbf{KR Input}: \begin{CJK*}{UTF8}{}\begin{korean}싱가포르에서 가장 유명한 하이난식 치킨 라이스 음식점 중 하나인 Tian Tian Hainanese Chicken Rice 는 맥스웰 푸드 센터 (Maxwell Food Centre) 에 위치해 있으며, 음식점 앞에는 손님들이 매일 길게 줄지어 서 있습니다. \end{korean} \end{CJK*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comment Examples
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Comment Examples}
+You will see this
+% but not this
+\iffalse
+You won't see this example
+\fi
+\jvg{this will appear at the side}
+\fb{so will this}
+\\ \\
+\lt{this appears in line in red}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Equation Examples.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Equation Examples}
+\subsection{Models}
+We used a lightweight Naive Bayes classification model that was previously described in language identification studies. Naive Bayes is a popular classification model due to its robustness and speed. The language of test document \emph{D} is predicted by maximizing the sum of the logarithmic probability of a feature (i.e. word/character ngrams frequency) \emph{w} given a language \emph{l}:
+
+\begin{equation}
+\hat{l}(D) = \underset { { l }_{ i }\epsilon L }{ { argmax } } \sum _{ j=1 }^{ |V| }{ \log { P({ w }_{ j }|{ l }_{ i }) }  }
+\end{equation}
+\vspace{0.1 mm}
+
+\noindent where L is the set of languages/varieties in each language group, \emph{N} is the frequency of the \emph{j}th word/character ngram in \emph{D} and \emph{V} is the set of all word/character ngrams in the training data. We use the \texttt{sklearn} implementation of multinomial Naive Bayes in our experiments\footnote{www.scikit-learn.org},  which calculates:
+
+\begin{equation}
+P({ w }|{ l }_{ i })=\frac { \sum _{ k=1 }^{ |\delta | }{ { N }_{ k,w } } + \alpha  }{ |V| +\sum _{ j=1 }^{ |V| }{ \sum _{ k=1 }^{ |\delta | }{ { N }_{ k,{ w }_{ j } } }  }  } 
+\end{equation}
+\vspace{0.1 mm}
+
+\noindent where $\delta$ is the set of features from the test document D and $\alpha$ is the smoothing factor; setting $\alpha$=1 results in Laplace smoothing and $\alpha$\textless1 for Lidstone smoothing. We used Laplace smoothing for our experiments. 
+
+
+These basic statistical properties of word co-occurrence are combined in various ways to form more complex co-occurrence measures. The common co-occurrence measures are defined as follows:
+
+\begin{eqnarray} 
+Dice(i,j) & = & \frac { 2*a }{ ({ f }_{ i }+{ f }_{ j }) }  \\[1em]
+PMI(i,j) & = & \log { a } -(\log { { f }_{ i } } +\log { { f }_{ j }) }  \\ [1em]
+MI(i,j) & = & \log { a } -\log { (a+b) } -\log { (a+c) }  \\ [1em]
+LLR(i,j) & = & a*\log { a } +b*\log { b } +c*\log { c } +d*\log { d }  \nonumber\\  
+&  & -(a+b)*\log { (a+b) } -(a+c)*\log { (a+c) }  \nonumber\\  
+&  & -(b+d)*\log { (b+d) } -(b+d)*\log { (c+d) }  \nonumber\\  
+&  & +(a+b+c+d)*\log { (a+b+c+d) }  \\ [1em]
+{ \phi  }^{ 2 } & = & \frac { (ad–bc)^{ 2 } }{ (a+b)(a+c)(b+c)(b+d) }  
+\end{eqnarray} 
+
+Given the definition of \emph{T$_N$}, we calculate the \emph{C-Value} of a term $t$ as follows:
+
+\begin{equation}
+C-value(t)=
+	\left \{
+		\begin{matrix} 
+		\log { |t| } *{ f }_{ t }  & if \ t \ is \ nested\\
+		\log { |t| } *{ (f }_{ t }-{ 1 }/{ { f }_{ { t }_{ N } } }*
+			\sum _{ i\in { T }_{ N } }^{  }{ { f }_{ i } }  & otherwise
+		\end{matrix} 
+	\right .
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% XML Examples.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{XML Examples}
+
+Here's an XML example in latex:
+
+\begin{figure}[!htb]
+\small
+\begin{lstlisting}[language=XML]
+<igt>
+  <example>
+    <line>21 a. o lesu mai</line>
+    <line>2sg return here</line>
+    <line>`You return here.'</line>
+  </example>
+</igt>
+\end{lstlisting} 
+\caption{Fijian IGT in ODIN's XML format} \label{fig:odin_fijian_xml}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Block Quotes Examples.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Block Quote Examples}
+
+Something something...
+
+\blockquote{The past is not a peaceful landscape lying there behind me, 
+a country in which I can stroll wherever I please, 
+and will gradually show me all its secret hills and dates. 
+As I was moving forward, so it was crumbling. 
+Some more text to make it longer than three lines. 
+Maybe it is long enough now.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Acknowledge Examples.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section*{Acknowledgements}
+
+The research leading to these results has received funding from the People Programme (Marie Curie Actions) of the European Union's Seventh Framework Programme FP7/2007-2013/ under REA grant agreement n$\,^{\circ}$ 317471.
+
+\end{document}

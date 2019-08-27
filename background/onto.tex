@@ -1,0 +1,76 @@
+\newpage
+\subsection{A Survey of Ontology Induction Techniques} \label{sec:ontology}
+
+Aristole's metaphysical categorization of worldly concepts\footnote{Aristotle, \emph{Metaphysics}, I, 4, 985} attempted to classify concepts into a universal hierarchical structure; later known as an ontology. Ontologies are often perceived as a hierarchical organization of concepts in a tree-like structure where: 
+
+\vspace{2mm}
+\begin{itemize}[nosep]
+\item \emph{\textbf{Concepts}} are the atomic units that relate to each other within the taxonomy
+\item \emph{\textbf{Relations}} are the links that bind the concepts 
+\item \emph{\textbf{Root}} is a top most concept on the hierarchy
+\item \emph{\textbf{Instances}} are particular referents/instantiations of a concept.
+\end{itemize}
+
+\vspace{2mm}
+\noindent For instance, \emph{dog}, \emph{mammals} and \emph{animals} are concepts within a taxnomy. They would be organized as follows within a taxonomy:
+
+\vspace{2mm}
+\hspace{55mm} $\top$ $\to$ \emph{animals} $\to$ \emph{mammals} $\to$ \emph{dog}
+\vspace{2mm}
+
+\noindent The $\top$ symbol preceding the first concept indicates the \emph{root} of the ontology. And the $\to$ symbols specify the relations\footnote{in this case, a \emph{hypernym} $\to$ \emph{hyponym} relation} between the connecting concepts. As an instantiation of the lowest level concepts, one could refer to it as a referent, e.g \emph{Odie}, the dog from the \emph{Garfield} comics would be a referent, i.e. an instantiation of the \emph{dog} concept.
+
+Traditionally, broad-coverage semantic taxonomies such as CYC \citep{lenat1995cyc}, SUMO \citep{PeaseEtAl2002sumo} have been manually created with much effort and yet they suffer from coverage limitations. This motivated the move towards unsupervised approaches for ontology induction and knowledge extraction \citep{lin2001discovery,snow2006semantic,velardi2013ontolearn}. 
+
+Ontological induction approaches can be broadly categorized as (i) pattern/rule based, (ii) clustering based, (iii) graph based and (iv) vector space approaches. 
+
+\subsubsection{Pattern/Rule Based Approaches}
+
+\citet{hearst1992} first introduced ontology learning by exploiting lexico-syntactic patterns that explicitly link a hypernym to its hyponym, e.g.  ``\emph{X and other Ys}" and ``\emph{Ys such as X}". These patterns could be manually constructed \citep{berland1999finding,kozareva2008} or automatically bootstrapped \citep{girju2003automatic}. These methods rely on surface-level patterns and incorrect items are frequently extracted because of parsing errors, polysemy, idiomatic expressions, etc.
+
+In the recent taxonomy induction shared tasks at SemEval \citep{task13semeval2016,bordea-EtAl:2015:SemEval}, rule based systems using substring heuristics have gained popularity and shown to attain high precision across multiple domains \citep[e.g.][]{lefever:2015:SemEval,panchenko2016taxi,usaarsemeval2016}. However, these systems still suffer from low recall but the precision-recall trade off favors rule-based systems due to the high false positive rates produced by non-rule based systems \citep[e.g.][]{nuigsemeval2016} that have achieved comparative recall rates as the rule-based ones.
+
+\subsubsection{Clustering Approaches}
+
+Clustering based approaches are mostly used to discover hypernym (is-a) and synonym (is-like) relations. For instance, to induce synonyms, \citet{lin1998automatic} clustered words based on the amount of information needed to state the commonality between two words.\footnote{Commonly known as Lin information content measure.}
+
+\cite{Caraballo1999} was first to combine clustering and pattern-based methods by hierarchically clustering words and assigning the hypernyms by identifying the ``\emph{A is a (kind of) B}" and ``\emph{X, Y, and other Zs}" patterns where B is considered as a hypernym of A and Z is the hypernym of X and Y. 
+
+Contrary to most bottom-up clustering approaches for taxonomy induction \citep{Caraballo2001,lin1998automatic}, \citet{pantelravi2004} introduced a top-down approach, assigning the hypernyms to clusters using co-occurrence statistics and then pruning the cluster by recalculating the pairwise similarity between every hyponym pair within the cluster.
+
+Besides inducing generic hypernym-hyponym taxonomies, similar clustering approaches were also applied in inducing domain-specific knowledge bases that focused on inferring relations between named entities \citep[e.g.][]{hasegawa2004discovering}.
+
+
+\subsubsection{Graph-based Approaches}
+
+In graph theory \citep{biggs1976graph}, similar ideas are conceived with a different jargon. In graph notation, \emph{\textbf{nodes}}/\emph{\textbf{vertices}} form the atom units of the graph and nodes are connected by directed \emph{\textbf{edges}}. A \emph{graph}, unlike an ontology, regards the hierarchical structure of a taxonomy as a by-product of the individual pairs of \emph{nodes} connected by directed \emph{edges}. In this regard, a single \emph{root} node is not guaranteed nor a tree-like structure. 
+
+Disregarding the overall hierarchical structure, the crux of graph induction focuses on the different techniques of edge weighting between individual node pairs and graph pruning or edge collapsing \citep{kozareva2010semi,navigliVF11,fountain2012taxonomy,Tuan2014}. 
+
+\subsubsection{Vector Space Approaches}
+
+Semantic knowledge can be thought of as a two-dimensional vector space where each word is represented as a point and semantic association is indicated by word proximity. The vector space representation for each word is constructed from the distribution of words across context, such that words with similar meaning are found close to each other in the space \citep{Mitchell:Lapata:2010,xling2013}.
+
+Although vector space models have been used widely in other NLP tasks, ontology/taxonomy induction using vector space models has not been popular. It is only since the recent advancement in neural nets and word embeddings that vector space models are gaining ground for ontology induction and relation extraction \citep{saxe2013,khashabi2013}.
+
+\subsubsection{Projecting a Hyponym to its Hypernym with a Transition Matrix}
+\citet{fu2014semhierarchies} discovered that hypernym-hyponyms pairs have similar semantic properties as the linguistic regularities discussed in \citet{mikolov2013}. For instance: 
+\\ \\
+\centerline{\emph{v}\texttt{(shrimp)}-\emph{v}\texttt{(prawn)} $\approx$ \emph{v}\texttt{(fish)}-\emph{v}\texttt{(goldfish)}}
+\\ \\
+\noindent Intuitively, the assumption is that all words can be projected to their hypernyms based on a transition matrix. That is, given a word \emph{x} and its hypernym \emph{y}, a transition matrix $\Phi$ exists such that 
+\vspace{2mm}
+\\ \\
+\centerline{\emph{y} = $\Phi$\emph{x}, e.g. \emph{v}\texttt{(goldfish)} = $\Phi$$\times$\emph{v}\texttt{(fish)}}
+\\ \\
+\noindent Fu et al. proposed two projection approaches to identify hypernym-hyponym pairs, (i) uniform linear projection where $\Phi$ is the same for all words and $\Phi$ is learnt by minimizing the mean squared error of $\|$$\Phi$\emph{x}-\emph{y}$\|$ across all word-pairs (i.e. a domain independent $\Phi$) and (ii) piecewise linear projection that learns a separate projection for different word clusters (i.e. a domain dependent $\Phi$, where a taxonomy's domain is bounded by its terms' cluster(s)). In both projections, hypernym-hyponym pairs are required to train the transition matrix $\Phi$.
+
+\section{Ontology and Translation}
+
+Another aspect of semantic knowledge within translation is the usage of ontology in human and machine translation. Beyond the flat structure of a list of domain-specific words and phrases in the terminology, an ontology provides a hierarchical structure between the words. The resulting `tree of domain-specific knowledge' is helpful for human translation when the translators are not familiar with the domain. 
+
+The goal of ontology development is the sharing of common knowledge of the information structure across different departments working in the same organization \citep{MUSEN1992435,gruber1993translation}. Although humanly crafted broad-based ontologies (i.e. upper ontologies) that attempt to catch the \textit{world knowledge} exist  \citep{lenat1995cyc,PeaseEtAl2002sumo,navigli2012babelnet}, it can be more viable to automatically create a domain-specific ontology given a domain-specific corpus in the target language. In this thesis we introduce (i) \textbf{\textit{a novel state-of-art technique to generate hypernyms between terms to create an ontology using neural net embeddings}} and (ii) \textbf{\textit{explore the endocentricity of hyper-hyponyms relations based on their surface string representation}}. This will be discussed in Chapter 6.
+
+We hope that the techniques and findings we have on ontology induction can be further developed beyond the scope of the thesis to support automatic ontology creation to help translators in their knowledge understanding part of their translation workflow.
+
+Beyond aiding human translators, ontology can be provide additional knowledge to the statistical machine translation training process. A simple way to incorporate ontological knowledge is to develop word clusters instead of a full hierarchical knowledge graph. Within the word alignment phase of the SMT training steps, there is a module that performs word clustering in order to reduce sparsity of the relative distortion computation\footnote{The discussion on word alignment algorithm is out of scope in this thesis but the Moses developers have an informational deck of slides describing it at \url{http://www.statmt.org/book/slides/04-word-based-models.pdf} \citep{koehn2009statistical}} \citep{och2003systematic}. In this thesis we present joint work on the \textit{\textbf{evaluation of a new predictive exchange clustering algorithm that can be used to replace  existing clustering software}}, {\tt mkcls} within the (M)GIZA++ word alignment tool that is used in the phrase-based machine translation. This will be discussed in Chapter 6.

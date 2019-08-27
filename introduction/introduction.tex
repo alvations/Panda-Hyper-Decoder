@@ -1,0 +1,77 @@
+\chapter{Introduction}
+\label{chap:intro}
+
+\section{Motivation and Objectives}
+
+The main motivation behind this thesis is to explore the issues of (i) creating novel state-of-art terminology and ontology extraction systems and (ii) integrating semantic (terminological and ontological) knowledge into  statistical machine translation within the same domain as the domain of the training data. 
+
+Unlike normal domain adaptation strategies that integrate domain specific semantic knowledge into models trained on generic data, \textbf{the objective of this thesis to incorporate domain specific terminological and ontological knowledge into machine translation models already trained from the domain specific data} of the same domain.
+
+\noindent The thesis seeks to answer the following questions:
+
+\begin{itemize}[noitemsep]
+\item How can terminological knowledge be extracted from monolingual and parallel corpora?
+\item How can ontological information be induced using state-of-art distributional approach such as word embeddings and using simple string-based patterns?
+\item Can terminological / lexical knowledge be used in Statistical Machine Translation to improve translation quality?
+\item Can sub-ontological knowledge (i.e. word clusters) be used to improve Statistical Machine Translation? 
+\end{itemize}
+
+%\fb{Main result for (ii) was negative: I think you should  say it here}
+%\lt{Expanding this section over the weekend.}
+
+In brief, we report the following in this thesis to address these research questions:
+
+\begin{itemize}[noitemsep]
+\item We introduce a \textbf{novel information theoretic approach for term extraction} based on Pointwise Mutual Information (PMI) and language models (Chapter 3)
+\item We investigate various setups to using additional lexical information to phrase-based statistical machine translation to produce \textbf{statistically significant but \underline{marginal} BLEU gains}\footnote{Our best systems with added lexical information achieved 24.14 BLEU for Japanese to English translation (baseline: 23.91 BLEU) and 17.38 BLEU for English to Japanese translation (baseline: 16.75 BLEU).} (Chapter 4)
+\item To understand more about machine translation metrics, esp. BLEU, we introduce a \textbf{semantically motivated adequacy metric} to measure the `goodness' of translation (Chapter 5.1)
+\item We \textbf{meta-evaluated the correlation between BLEU/RIBES MT evaluation metrics against human judgements} (Chapter 5.2)
+\item We introduce an \textbf{unsupervised novel hypernym induction} techniques using neural network word embeddings (Chapter 6)
+\item We integrate sub-ontological knowledge into SMT by \textbf{scaling word clustering} that is being used in SMT word alignments (Chapter 7)
+\end{itemize}
+
+
+\section{Contributions}
+
+The work presented in this thesis contributes to the field of Natural Language Processing (NLP) and Statistical Machine Translation (SMT) in the following ways. 
+
+Innovations:
+
+\begin{itemize}
+\item We create a novel approach to extract terminology monolingually using a pre-trained language model ($PMI_{LM}$) and extend it for bilingual terminology extraction with the use of word/phrase alignments
+\item Different from the normal use of a dictionary for the purpose of domain adaptation where normally, a domain-specific lexicon is appended to a translation model trained on generic texts, we are investigating the use of an in-domain dictionary in statistical machine translation.
+\item We propose a semantically adequacy motivated evaluation metric that combines state-of-art word embeddings and an MT evaluation metrics ensemble 
+\item We introduce a new method to induce hypernyms in an unsupervised manner using the `is-a' non-content word embedding
+\end{itemize}
+
+Empirical Findings:
+
+\begin{itemize}
+\item Using additional lexical information (automatically extracted terminology or a manually crafted dictionary) in SMT can provide marginal BLEU score increment (often statistically insignificant) but more often degrades system performance
+\item Passively adding lexical information in SMT more than once can improve SMT but it also provides marginal BLEU improvements (sometimes statistically significant) and the number of times to add the lexicon becomes an additional hyperparameter that is not in general justified by the marginal gains
+\item BLEU / RIBES score correlation only occurs when the translation is inherently good; when it is not, BLEU / RIBES tends to be overly optimistic due to their reliance on crude surface string (ngram) based nature.
+\item Using sub-ontological information in machine translation can provide substantial speed gains in training a phrase-based SMT system 
+\end{itemize}
+
+%\fb{showed that adding terminology does not help much}  (iii) a novel technique for ontology induction using word embeddings. 
+%\lt{Note to self: paragraph above needs to be edited to fit the new content page, also, do the KenLM thesis thing where he bolded the one liner contributions and refers it to the respective chapter}
+
+%\section{Statement of Originality}
+%Statement here.
+
+%Publications here.
+\section{Publications}
+
+Various parts of this thesis were published in peer-reviewed natural language processing and computational linguistics conference and workshop proceedings. 
+
+Chapter \ref{chap:lmpmi} describe the Pointwise Mutual Information (PMI) terminology extraction related experiments are published in \citet{lilingexperttechreport} and \citet{lilingexpertworkshop}. The papers describes the preliminary findings of the terminology extractor where the language model based PMI extractor proposed in this thesis outperformed the classic C-value based term extraction on a subset of food-related articles on Wikipedia. The extracted terms was evaluated against a food domain terminology provided in SemEval-2015 taxonomy evaluation task. A list of candidate terms were extracted, each Wikipedia sentence and if the sentence contains the words in the SemEval-2015 taxonomy task, we compute the mean reciprocal rank (MRR) and accuracy of the candidate terms extracted from these sentences. 
+
+Chapter \ref{chap:goodness} summarizes the pursuit of finding a metric of `goodness' of translation quality and this work was previously published in \citep{usaarsheff2015,velatan2015,wolvesaar2016} in collaboration with various research partners within the EXPERT projects. We have pit ours metric in SemEval and WMT competitions. Our best system was ranked in top 10 out of 130 submissions from 40 over teams competing in the SemEval semantic similarity task. We've combined state-of-art deep learning word embeddings with a deluge of machine translation evaluation metrics to create a robust ensemble metric that attempts to measures the similarity of two sentences. We showed that by using the distributed semantic representation captured by the embeddings and the syntactic grammaticality encapsulated in the surface word similarity from the MT metrics, we effectively assess the adequacy and fluency of translations that yields high similarities between the MT hypotheses and their reference translations
+
+The second part of Chapter \ref{chap:goodness} takes a deeper dive into understanding what exactly are MT evaluation metric evaluating. It presents the joint publication where we meta-evaluated the disparity between the popular BLEU metric and human judgments. This work was previously published in the Workshop for Asian Translation \citep{WAT2015overview} as the error analysis of our submission to the shared task \citep{awkward2016}. 
+
+Part of Chapter \ref{chap:ontoinduce} comes from the two year participation in the SemEval taxonomy evaluation shared tasks where we created a function phrase vector that identifies the hypernym of a term within an embedding vector space \citep{tan-gupta-vangenabith:2015:SemEval,usaarsemeval2016}.
+
+Finally, a portion of Chapter \label{chap:clustercat} was previously published in collaboration \citep{dehdari-tan-vangenabith:2016:N16-1,dehdari-tan-vangenabith:2016:N16-3}. It describes the experiments of using word clusters (i.e. sub-ontological knowledge) to improve machine translations. The publications were more focused on the novel clustering mechanism while the thesis chapter zoomed in on the word clusters effects in improving machine translation quality.
+
+A full list of publications including the above described and covering other related but not directly related topics can be found in the following 2 pages. 

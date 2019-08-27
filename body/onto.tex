@@ -1,0 +1,203 @@
+\chapter{Ontology Induction using Neural Vector Space}
+\label{chap:ontoinduce}
+
+Semantic ontologies provide structured world knowledge to Artificial Intelligence (AI) and Natural Language Processing (NLP) systems. Traditional broad-coverage taxonomies such as CYC \citep{lenat1995cyc}, SUMO \citep{Pease2002Suggested,Miller1995}, YAGO \citep{Suchanek2007} and Freebase \citep{Bollacker2008} have been manually created or curated with much effort and yet they suffer from coverage sparsity. This motivated the move towards unsupervised approaches to extract structured relational knowledge from texts \citep{lin2001discovery,snow2006semantic,velardi2013ontolearn}.
+
+With the rapid technological evolution, it is more feasible to automatically construct a domain-specific taxonomy that caters to sector or company specific terminology \citep{lefever:2015:SemEval}. This motivated the move towards unsupervised approaches to taxonomy extraction \citep{berland1999finding,lin2001discovery,snow2006semantic} and specifically focused towards particular domains \citep{velardi2013ontolearn,bordea-EtAl:2015:SemEval}. 
+
+Previous work in taxonomy extraction focused on rule-based, clustering and graph-based approaches. The hierarchical structure of domain concepts is made up of hypo-hypernymy relations between terms. Different approaches have been proposed to induce these relations automatically ranging from pattern/rule-based approaches \citep{hearst1992,girju2003automatic,kozareva2008,ceesay-juanhou:2015:SemEval} to clustering and frequency based approaches \citep{lin1998automatic,Caraballo2001,pantelravi2004,grefenstette:2015:SemEval}, classification approaches \citep{snow2004learning,ritter2009anyway,espinosaanke-saggion-ronzano:2015:SemEval} and graph-based approaches \citep{kozareva2010semi,navigliVF11,fountain2012taxonomy,Tuan2014,cleuziou-EtAl:2015:SemEval} (See Chapter 2, Section 2.5.3). 
+
+More recently, there is a resurgence of vector space or distributional approaches \citep{van2005automatic,lenci2012identifying,santus2014} primarily because of the renaissance of deep learning and network networks. Semantic knowledge can be thought of as a vector space where each word is presented by a point and the proximity between words in this space quantifies their semantic association. The vector space is usually constructed from the distribution of words across context such that similar meanings tend to be found close to each other within the vector space \citep{Mitchell:Lapata:2010}. 
+
+With the present advancement in neural nets and word embeddings \citep{mikolov2013distributed,pennington2014glove,levy2014linguistic,shazeer2016swivel}, neural space models are gaining popularity in taxonomy induction and relation extraction tasks \citep{saxe2013,fu2014semhierarchies,tan-gupta-vangenabith:2015:SemEval}.
+
+Fu et al. (2014) proposed a vector space approach to hypernym identification using word embeddings that trains a projection matrix that converts a hyponym vector to its hypernym. However, their approach requires an existing hypernym-hyponym pairs for training before discovering new pairs.
+
+Instead of learning a supervised transition matrix $\Phi$, we capitalize on the fact that hypernym-hyponym pairs often occur in a sentence with an ‘is a’ phrase, e.g. “The goldfish (Carassius auratus auratus) is a freshwater fish”.\footnote{\url{http://en.wikipedia.org/wiki/Goldfish}}
+
+We propose a simpler unsupervised approach where we learn a vector for the phrase ``\emph{is-a}". We single-tokenize the adjacent ``is" and ``a" tokens and learn the word embeddings with \emph{is-a} forming part of the vocabulary in the input matrix. 
+
+\section{Inducing a Hypernym with \emph{is-a} Vector}
+
+Effectively, we hypothesize that $\Phi$ can be replaced by the ``\emph{is-a}" vector. To achieve the piecewise projection effects of $\Phi$, we trained a different deep neural net model for each Taxonomy Extraction Evaluation (TaxEval) domain \citep{task17semeval2015} and assume that the ``\emph{is-a}" scales automatically across domains. For instance, the multiplication  of the \emph{v}\texttt{(tiramisu)} and the \emph{v}\texttt{(is-a$_{food}$)} vectors yields a proxy vector and we consider the top ten word vectors that are most similar to this proxy vector as the possible hypernyms, i.e. \emph{v}\texttt{(tiramisu)}$\times$\emph{v}\texttt{(is-a$_{food}$)} $\approx$ \emph{v}\texttt{(cake)}.
+
+There is little or no previous work that manipulates non-content word vectors in vector space models for natural language processing. Often, non-content words\footnote{Words that are not noun (entities/arguments), verbs (predicates), adjectives or adverbs (adjuncts).} were implicitly incorporated into the vector space models by means of syntactic frames or syntactic parses \citep{Sarmento2009}.
+
+Our main contribution for ontological induction using vector space models are primarily (i) the use of non-content word vectors and (ii) simplifying a previously complex process of learning a hyper-hyponym transition matrix\footnote{Parts of the research reported in this chapter has been published in \cite{tan-gupta-vangenabith:2015:SemEval}}.
+
+\subsection{Experimental Setup}
+
+Similar to \cite{fountain2012taxonomy}, the SemEval-2015 Taxonomy Extraction Evaluation (TaxEval) task addresses taxonomy learning without the term discovery step, i.e. the terms for which to create the taxonomy are given \citep{task17semeval2015}. The focus is on creating the hypernym-hyponym relations. We will be using this dataset to evaluate our hypernym induction system using the \textit{`is-a'} vector.
+
+In the TaxEval task, ontologies are evaluated through comparison with gold standard taxonomies. There is no training corpus provided by the organisers of the task and the participating systems are to generate hyper-hyponyms pairs using a list of terms from four different domains, viz. chemicals, equipment, food and science. 
+
+The gold standards used in evaluation are the \emph{ChEBI ontology} for the chemical domain \citep{degtyarenko2008chebi}, the \emph{Material Handling Equipment taxonomy}\footnote{http://www.ise.ncsu.edu/kay/mhetax/index.htm} for the equipment domain, the \emph{Google product taxonomy}\footnote{http://www.google.com/basepages/producttype/taxonomy.en-US.txt} for the food domain and the\emph{ Taxonomy of Fields and their Different Sub-fields}\footnote{http://sites.nationalacademies.org/PGA/Resdoc/PGA\_044522} for the science domain. In addition, all four domains are also evaluated against the sub-hierarchies from the WordNet ontology that subsumes the Suggested Upper Merged Ontology \citep{PeaseEtAl2002sumo}.
+
+There is no specified training corpus released for the SemEval-2015 TaxEval task. To produce a domain specific corpus for each of the given domains in the task, we used the Wikipedia dump and preprocessed it using WikiExtractor\footnote{We use the same Wikipedia dump to text extraction process from the SeedLing - Human Language Project \citep{emerson2014}.} and then extracted documents that contain the terms for each domain individually.
+
+We trained a skip-gram model phrasal word2vec neural net \citep{mikolov2013efficient} using gensim \citep{rehureklrec}. The neural nets were trained for 100 epochs with a window size of 5 for all words in the corpus.
+
+\subsection{Evaluation Metrics}
+
+For the TaxEval task, the multi-faceted evaluation scheme presented in Navigli (2013) was adopted to compare the overall structure of the taxonomy against a gold standard, with an approach used for comparing hierarchical clusters. The multi-faceted evaluation scheme evaluates (i) the structural measures of the induced taxonomy (left columns of Table 6.1), (ii) the comparison against gold standard taxonomy (right columns of Table 6.1 and leftmost column of Table 6.2) and (iii) manual evaluation of novel edges precision (last row of Table 6.2). 
+
+Regarding the two types of automatic evaluation measures, the structural measures provide a gauge of the system's coverage and the ontology structural integrity, i.e. ``tree-likeness" of the ontology produced by the hypernym-hyponym pairs, and the comparison against the gold standards gives an objective measure of the ``human-likeness" of the system in producing a taxonomy that is similar to the manually-crafted taxonomy.
+
+\section{Results}
+
+
+\begin{table}[H]
+\small
+\centering
+    \begin{tabular}{l|cccc|ccccc}
+                 & \textbf{$\vert$V$\vert$}   & \textbf{$\vert$E$\vert$}   & \textbf{\#c.c} & \textbf{cycles} & \textbf{\#VC} & \textbf{\%VC} & \textbf{\#EC} & \textbf{\%EC} & \textbf{:NE} \\ \hline
+    \textbf{Chemical}     & 13785 & 30392 & 302    & YES    & 13784                 & \textbf{0.7838}          & 2427               & 0.0977        & 1.1268               \\
+    \textbf{Equipment}    & 337   & 548   & 28     & YES    & 336                   & 0.549           & 227                & 0.3691        & 0.5219               \\
+    \textbf{Food}         & 1118  & 2692  & 23     & YES    & 948                   & 0.6092          & 428                & 0.2696        & 1.4265               \\
+    \textbf{Science}      & 355   & 952   & 14     & YES    & 354                   & 0.7831          & 173                & \textbf{0.3720}         & 1.6752               \\ \hline
+   \textbf{WN Chemical}  & 1173  & 3107  & 31     & YES    & 1172                  & \textbf{0.8675}          & 532                & \textbf{0.3835}       & 1.8566               \\
+    \textbf{WN Equipmen}t & 354   & 547   & 43     & YES    & 353                   & 0.7431          & 149                & 0.3072        & 0.8206               \\
+    \textbf{WN Food }     & 1200  & 3465  & 23     & YES    & 1199                  & 0.8068          & 549                & 0.3581        & 1.9021               \\
+   \textbf{WN Science }  & 307   & 892   & 8      & YES    & 306                   & 0.7132          & 156                & 0.3537        & 1.6689               \\
+    \end{tabular}
+    \caption{Structural Measures and Comparison against Gold Standards for {\tt USAAR-WLV}. The labels of the columns refer to 
+no. of distinct vertices and edges in induced taxonomy (\textbf{$\vert$V$\vert$} and \textbf{$\vert$E$\vert$}), 
+no. of connected components (\textbf{\#c.c}), whether the taxonomy is a Directed Acyclic Graph (\textbf{cycles}),
+vertex and edge coverage, i.e. proportion of gold  standard vertices and edges covered by system (\textbf{\%VC} and \textbf{\%EC}), 
+no. of vertices and edges in common with gold standard (\textbf{\#VC} and \textbf{\#EC}) and ratio of novel edges (\textbf{:NE}).}
+\end{table}
+
+\begin{table}[H]
+\small
+\centering
+    \begin{tabular}{l|ccccc|c}
+             & \textbf{INRIASAC} & \textbf{LT3}    & \textbf{NTNU}   & \textbf{QASSIT} & \textbf{TALN-UPF} & \textbf{USAAR} \\ \hline
+    Avg. F\&M & 0.3270 & \textbf{0.4130} & 0.0580 & 0.3880 & 0.2630 & 0.0770 \\
+    Avg. Precision   & 0.1721   & \textbf{0.3612} & 0.1754 & 0.1563 & 0.0720    & 0.2014    \\
+    Avg. Recall   & 0.4279   & \textbf{0.6307} & 0.2756 & 0.1588 & 0.1165   & 0.3139    \\
+    Avg. F-Score   & 0.2427   & \textbf{0.3886} & 0.2075 & 0.1575 & 0.0798   & 0.2377    \\
+   Avg. Precision of NE & 0.4800    & \textbf{0.5960}  & 0.3530  & 0.2470  & 0.1020    & 0.4200     \\
+    \end{tabular}
+    \caption{Averaged F\&M Measure, Precision, Recall, F-score for All Systems Outputs when Compared to Gold Standard and Manually Evaluated Average Precision of Novel Edges.}
+\end{table}
+
+Table 6.2 presents the evaluation scores for our system (USAAR) in the TaxEval task, the \%VC and \%EC scores summarize the performance of the system in replicating the gold standard taxonomies. 
+
+In terms of vertex coverage, our system performs best in the chemical and WordNet chemical domain. Regarding edge coverage, our system achieves highest coverage for the science domain and WordNet chemical domain. Having high edge and vertex coverage significantly lowers false positive rate when evaluating hypernym-hyponyms pairs with precision, recall and F-score. 
+
+We also note that the wikipedia corpus extracted that we used to induce the vectors lacks coverage for the food domain. In the other domains, we discovered all terms in the wikipedia corpus plus the domains' root hypernym (i.e. \textbf{$\vert$V$\vert$} = \textbf{\#VC} + 1).
+
+Table 6.2 presents the comparative results between the participating teams in the TaxEval task averaged over all domains. We performed reasonably well as compared to the other systems in all measures. While our system's Fowlkes and Mallows measure (F\&M) is low, it is only representative of the clusters we have induced as compared to the gold standard. To improve our F\&M measure, we could reduce the number of redundant novel edges by pruning our system outputs and achieve comparable results to the other teams given our relatively precision of novel edges.
+
+\section{Hyponym Endocentricity}
+
+Early research in theoretical linguistics discussed the idea of \emph{endocentric} vs. \emph{exocentric} constructions \citep{brugmann1886vergleichende,aleksandrov1886sprachliches,brockelmann1908grundriss,bloomfield1983introduction}. 
+
+A grammatical construction is \emph{endocentric} when it fulfils the same linguistic function as one of its parts. For instance, the word \emph{goldfish} is an endocentric compound noun that shares the syntactic noun properties of \emph{fish} and semantically the compound denotes a type of \emph{fish}. 
+
+Conversely, when a grammatical construction made up of two or more parts is not \emph{endocentric}, the construction would be exocentric such that no one part of the construction contains the main meaning of the word. Intuitively, we can perceive that there are many endocentric hyponyms in a taxonomy where part of the term conveys its main meaning and usually that part of term would be its hypernym.
+
+While experimenting with ways to weight a term for information retrieval, \cite{jones1979experiments} observed that compound nouns follow the head-modifier principle where the meaning of the term can be conveyed by part(s) of the compound. In the first TExeval task in SemEval-2015, both \cite{lefever:2015:SemEval} and \cite{tan-gupta-vangenabith:2015:SemEval}\footnote{https://github.com/alvations/USAAR-SemEval-2015/tree/master/task17-USAAR-WLV} independently developed string-based systems that exploit the endocentric nature of hyponyms. 
+
+%The endo/exocentricity feature of any lexical term assumes that the term can be split up into two or more parts. For example, \emph{fish} is a single noun that cannot be split up thus it cannot be endo- or exocentric. 
+
+In this section, we seek to answer the question of exactly \textbf{\emph{``how many of hyponyms within a taxonomy are endocentric?"}}. Additionally, we exploit the endocentric nature of the hyponyms to extend the taxonomy by trawling Wikipedia \emph{List of Lists of Lists}\footnote{https://en.wikipedia.org/wiki/List\_of\_lists\_of\_lists}. Often these lists of terms are found in Wikipedia marked up tables or in bullet forms.
+
+\subsection{Identifying Endocentric Parts}
+
+The main implementation of the rule-based identifier\footnote{Our open-source implementation can be found at https://github.com/alvations/Endrocentricity} checks \textbf{\emph{if a term T1 is a substring of T2} and if so, \emph{assign T1 as a hypernym of T2}}. Examples of hypo-hypernym pairs captured by this rule includes are (\emph{linguistics, psycholinguistics}), (\emph{beef, kobe beef}), (\emph{sauce, sauce gribiche}). 
+
+Our implementation is a little simpler than the three part morpho-syntactic analyzer component of the multi-modular taxonomy constructor in \cite{lefever:2015:SemEval}. She implemented rules for three different syntactic constructions where they check for suffix and treat single-word terms and multi-word terms differently while our implementation is agnostic to the single and multi-word distinction. 
+
+In addition to first, \emph{\textbf{if a term contains the ``of" preposition, we swap the assignment and check that T2 starts with T1 then assign T2 as a hypernym of T1}}. Examples of hypo-hypernym pairs captured by this swap rule are (\emph{elixir of life, elixir}), (\emph{sociology of education, sociology}). 
+
+To improve the precision of the identifier, we set a threshold of a minimum character length of three when identifying a term as a hypernym. 
+
+\section{Extending Taxonomy with Wikipedia List of Lists of Lists}
+
+The Wikipedia List of Lists of Lists (LOLOL) is a crowd-sourced list of lists of terms that belong to their respective categories.  We adapted the a customized crawler\footnote{It was built for crawling translations and diachronic texts in previous SemEval tasks} \citep{tan-EtAl:2014:SemEval,tan-ordan:2015:SemEval} to crawl for tables or bullet points in Wikipedia the subpages of the LOLOL for the food domain. We started the crawl from these seed pages under the bullet point of \url{ https://en.wikipedia.org/wiki/List\_of\_lists\_of\_lists\#Food\_and\_drink}.
+
+When the crawler lands on each List of List (LOL) page, it will \emph{\textbf{treat the URL suffix as the hypernym}} and \emph{\textbf{find words in the bullet points or tables that contains endocentric hyponyms}}. 
+
+If an endocentric hyponym exists, it will extract either extract (i) all the bolded terms if the LOL page is bulletined or (ii) all terms in the first column if the LOL page is in table form. The choice of the first column is based on the fact that often LOL tables are bi-column, one containing the terms and the other the gloss or/and description of the term.
+
+\subsection{Limitations of LOLOL Trawler}
+
+However, there are a couple issues with this \emph{\textbf{trawling}} (\emph{crawl+clean}) approach to extend the taxonomy.
+%\footnote{Due to the non-server friendly implementation of our trawler, the source is not openly released. It will try to bypass {\tt robot.txt}}. 
+
+\textbf{LOL Pages are Not Standardized}: The way the crawler cleans the bullets or tables on each LOL page is not standardized because there is not constraint put on the format of the Wikipedia's LOL page, our crawler only managed to crawl and clean less than 10 LOL pages when extracting the new terms for the food domain. 
+
+\textbf{LOL Pages are Inceptive}: The depth of how nested the LOLs are is undefined. Our crawler can start with a {\tt List\_of\_foods} page and it leads to the {\tt List\_of\_breads} page and then the {\tt List\_of\_American\_breads} page and it continues. For sanity, we had to break our trawler at the second page depth and return to the main LOLOL page to move on to the next LOL that we have not previously trawled. 
+
+\subsection{Results}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{l|c|cc|ccc}
+    ~                         & \textbf{Environment} & \textbf{Food}  & \textbf{Food}          & \textbf{Science}  & \textbf{Science} & \textbf{Science}   \\
+    ~                         & (Eurovoc) & (WordNet) &           & (Eurovoc) & (WordNet) &    \\
+    
+     \hline
+    \textbf{\#Terms }                  & 261                   & 1486           & 1555          & 370               & 125               & 452       \\
+    \textbf{\#Relations}               & 261                   & 1576           & 1587          & 452               & 124               & 465       \\ \hline
+    \textbf{\#Correct} / \textbf{Identified}  & 38 / 47               & 381 / 540      &  -- / 4347*  & 66 / 104          & 25 / 30           & 119 / 312 \\
+    \textbf{Precision}                 & \textbf{0.8085}                & \textbf{0.7056}         & 0.0603        & \textbf{0.6333}            & \textbf{0.8173}            & 0.3814    \\
+    \textbf{Recall}                    & 0.1456                & 0.2418         & 0.1651        & 0.1532            & 0.1881            & 0.2559    \\ \hline
+    \textbf{F-score}                   & 0.2468                & \textbf{0.3601}         & 0.0883        & 0.2468            & 0.3058            & 0.3063    \\
+    \textbf{F\&M }                     & 0.0007                & 0.0021         & 0.0           & 0.0023            & 0.0008            & 0.0020    \\
+    \end{tabular}
+\caption{Results of Our Endocentric Hypo-Hypernym Identifier Against the Gold Standard Taxonomy (\textbf{\#Terms} refers to the no. of terms in the domain and \textbf{\#Relations} refers to the no. of hypo-hypernym pairs found in the gold-standard taxonomy. \textbf{\#Correct / \#Identified} refers to the proportion of hypo-hypernym pairs our system has correctly identified. \textbf{Bold} items indicates that it is highest score among the competing teams in TExEval-2. The asterisk \textbf{*} indicates that the trawler was used to produce submissions for this domain.)}
+\end{table}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{l|cccc|cc}
+    \textbf{Domain}                & \textbf{JUNLP} & \textbf{TAXI} & \textbf{NUIG-UNLP}  & \textbf{QASSIT} & \textbf{USAAR} \\ \hline
+    Environment (Eurovoc) 	& 0.02  & 0.11 & 0.08      & 0.07   & \textbf{0.22 \ }   \\
+    Food              		& 0.2   & 0.36  & --       & --  & \textbf{0.73}*      \\
+    Food (Wordnet)    		& 0.18  & 0.32  & --      & --  & \textbf{0.81 \ }      \\
+    Science           & 0.06        & 0.14  & 0.09       & 0.07  & \textbf{0.71 \ }      \\
+    Science (Eurovoc) & 0.02        & 0.02  & \textbf{0.04}       & 0.05  & 0.00 \     \\
+    Science (Wordnet) & 0.06        & 0.22  & 0.05       & 0.22  & \textbf{0.47 \ }      \\
+    \end{tabular}
+\caption{Results of a Manual Evaluation on 100 Random Novel Hypo-Hypernym Pairs for Competing Teams In TExEval-2 }
+\end{table}
+
+
+Table 6.3 presents the overview results of our submissions (USAAR) to the TExEval-2 task. Only the results for the food domain contains the hypo-hypernym pairs extracted by our trawler. The rest of the domains comprise of the outputs solely generated by our endocentric hypo-hypernym identifier. 
+
+Although it's counter-intuitive to think that endocentric hypo-hypernym pairs can be wrong, the following example aptly demonstrates the limitations of our approach: (\emph{honey bunches of oats, honey}). In this case, neither `\emph{honey bunches of oats}' can be a hypernym of `\emph{honey}' or vice versa.
+
+When compared against the gold standard taxonomies, our submission achieved the highest precision in the enviornment, food (WordNet), science (Eurovoc) and science (WordNet) domains. 
+
+As for the Food domain, we have expected the fall in precision due to the additional terms that we have introduced from the Wikipedia LOLOL outside of the gold standard taxonomy. Thus, we are also unable to determine the true ``correctness" of these terms (indicated by the dash in Table 1). 
+
+Looking at the proportion of the number of hypo-hypernym pairs that our system correctly identified, we can empirically claim that \emph{15-25\% of the hypernyms in a taxonomy can be easily identified through their endocentric hyponyms} by taking the ratio of \#Correct / \#Terms. 
+
+However, the proportions presented in Table 6.3 exclude the correct hypo-hypernym pairs that are identified but are not currently in the gold-standard taxonomy. Table 6.4 presents the results of the manual evaluation for the precision of 100 randomly selected hypo-hypernym pairs that are not in the gold standard taxonomy. Our system achieved top precision in all domains other than the science (Eurovoc). 
+
+If we consider the precision scores from Table 6.4 as the precision of the remaining identified but not correct hypo-hypernym pairs in Table 6.3, we might be able to add to the empirical claim of 15-25\% hypononym endocentricity in taxonomies. However, the aggregation of the manual evaluation results should only be considered if the novel hypo-hypnym relations are curated and added to the standard taxonomies.
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{l|l|ccc}
+    ~                 & ~ & \textbf{TExEval-2}  & \textbf{Lefever}  & \textbf{Ours}   \\ 
+        ~                 & ~ & (Baseline) &  (2015) &    \\ \hline
+    Food    & P & 0.5000                & 0.602          & \textbf{0.7056} \\
+    (WordNet)                 & R & \textbf{0.2576 }              & 0.176          & 0.2418 \\ \hline
+    Science  & P & 0.6897               & 0.696          & \textbf{0.8173} \\
+    (WordNet)               & R & \textbf{0.2655}               & 0.270          & 0.1881 \\
+    \end{tabular}
+\caption{Comparison of String-based Methods}
+\end{table}
+
+Comparing against the TExEval-2 organizers baseline string-based method and Lefever's (2015) morpho-syntactic module for the WordNet taxonomies, our system achieved highest precision but underperfomed in recall as shown in Table 6.5. 
+
+Since our main implementation of our hypernym identifier is language independent, in retrospect, we can easily remove the swap rule that is attached to the English `\emph{of}' and apply it to other languages in the TExEval-2 task.
+
+ \section{Summary}
+ 
+Our vector space hypernym generator achieved modest results when compared against other participating teams. Given the simple approach to hypernym-hyponym relations, it is possible that future research can apply the method to other non-content word vectors to induce other relations between entities. 
+
+In exploring hypernym endocentricity, we have empirically shown that 15-25\% of the hypernyms in an ontology can be easily identified through their endocentric hyponyms and we briefly discuss the intuitions and limitations of the approach. We have achieved competitive results in taxonomy construction and achieved top precisions for hypernym identification in most domains involved in the task.
